@@ -1,0 +1,93 @@
+<?xml version="1.0" encoding="utf-8"?>
+<wsdl:definitions xmlns:s="http://www.w3.org/2001/XMLSchema" xmlns:soap12="http://schemas.xmlsoap.org/wsdl/soap12/" xmlns:mime="http://schemas.xmlsoap.org/wsdl/mime/" xmlns:tns="http://www.retaildirections.com/" xmlns:soap="http://schemas.xmlsoap.org/wsdl/soap/" xmlns:tm="http://microsoft.com/wsdl/mime/textMatching/" xmlns:http="http://schemas.xmlsoap.org/wsdl/http/" xmlns:soapenc="http://schemas.xmlsoap.org/soap/encoding/" targetNamespace="http://www.retaildirections.com/" xmlns:wsdl="http://schemas.xmlsoap.org/wsdl/">
+  <wsdl:types>
+    <s:schema elementFormDefault="qualified" targetNamespace="http://www.retaildirections.com/">
+      <s:element name="RDService">
+        <s:complexType>
+          <s:sequence>
+            <s:element minOccurs="0" maxOccurs="1" name="request" type="s:string" />
+          </s:sequence>
+        </s:complexType>
+      </s:element>
+      <s:element name="RDServiceResponse">
+        <s:complexType>
+          <s:sequence>
+            <s:element minOccurs="0" maxOccurs="1" name="RDServiceResult" type="s:string" />
+          </s:sequence>
+        </s:complexType>
+      </s:element>
+      <s:element name="SecurityToken" type="tns:SecurityToken" />
+      <s:complexType name="SecurityToken">
+        <s:sequence>
+          <s:element minOccurs="0" maxOccurs="1" name="Username" type="s:string" />
+          <s:element minOccurs="0" maxOccurs="1" name="Password" type="s:string" />
+          <s:element minOccurs="0" maxOccurs="1" name="ServiceName" type="s:string" />
+          <s:element minOccurs="0" maxOccurs="1" name="ServiceVersion" type="s:string" />
+        </s:sequence>
+        <s:anyAttribute />
+      </s:complexType>
+      <s:element name="FileAttachment" type="tns:FileAttachment" />
+      <s:complexType name="FileAttachment">
+        <s:sequence>
+          <s:element minOccurs="0" maxOccurs="1" name="FileContent" type="s:base64Binary" />
+        </s:sequence>
+        <s:anyAttribute />
+      </s:complexType>
+    </s:schema>
+  </wsdl:types>
+  <wsdl:message name="RDServiceSoapIn">
+    <wsdl:part name="parameters" element="tns:RDService" />
+  </wsdl:message>
+  <wsdl:message name="RDServiceSoapOut">
+    <wsdl:part name="parameters" element="tns:RDServiceResponse" />
+  </wsdl:message>
+  <wsdl:message name="RDServiceFileAttachment">
+    <wsdl:part name="FileAttachment" element="tns:FileAttachment" />
+  </wsdl:message>
+  <wsdl:message name="RDServiceSecurityToken">
+    <wsdl:part name="SecurityToken" element="tns:SecurityToken" />
+  </wsdl:message>
+  <wsdl:portType name="RDWSSoap">
+    <wsdl:operation name="RDService">
+      <wsdl:documentation xmlns:wsdl="http://schemas.xmlsoap.org/wsdl/">Retail Directions Web Services Version 1.7.20.1</wsdl:documentation>
+      <wsdl:input message="tns:RDServiceSoapIn" />
+      <wsdl:output message="tns:RDServiceSoapOut" />
+    </wsdl:operation>
+  </wsdl:portType>
+  <wsdl:binding name="RDWSSoap" type="tns:RDWSSoap">
+    <soap:binding transport="http://schemas.xmlsoap.org/soap/http" />
+    <wsdl:operation name="RDService">
+      <soap:operation soapAction="http://www.retaildirections.com/RDService" style="document" />
+      <wsdl:input>
+        <soap:body use="literal" />
+        <soap:header message="tns:RDServiceSecurityToken" part="SecurityToken" use="literal" />
+      </wsdl:input>
+      <wsdl:output>
+        <soap:body use="literal" />
+        <soap:header message="tns:RDServiceFileAttachment" part="FileAttachment" use="literal" />
+      </wsdl:output>
+    </wsdl:operation>
+  </wsdl:binding>
+  <wsdl:binding name="RDWSSoap12" type="tns:RDWSSoap">
+    <soap12:binding transport="http://schemas.xmlsoap.org/soap/http" />
+    <wsdl:operation name="RDService">
+      <soap12:operation soapAction="http://www.retaildirections.com/RDService" style="document" />
+      <wsdl:input>
+        <soap12:body use="literal" />
+        <soap12:header message="tns:RDServiceSecurityToken" part="SecurityToken" use="literal" />
+      </wsdl:input>
+      <wsdl:output>
+        <soap12:body use="literal" />
+        <soap12:header message="tns:RDServiceFileAttachment" part="FileAttachment" use="literal" />
+      </wsdl:output>
+    </wsdl:operation>
+  </wsdl:binding>
+  <wsdl:service name="RDWS">
+    <wsdl:port name="RDWSSoap" binding="tns:RDWSSoap">
+      <soap:address location="http://api.example.com/RDWS/RDWS.asmx" />
+    </wsdl:port>
+    <wsdl:port name="RDWSSoap12" binding="tns:RDWSSoap12">
+      <soap12:address location="http://api.example.com/RDWS/RDWS.asmx" />
+    </wsdl:port>
+  </wsdl:service>
+</wsdl:definitions>

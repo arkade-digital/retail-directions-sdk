@@ -1,0 +1,24 @@
+{
+    "name": "arkade/retail-directions-sdk",
+    "description": "PHP SDK for the Retail Directions Web Service (RDWS)",
+    "type": "library",
+    "license": "MIT",
+    "autoload": {
+        "psr-4": {
+            "Arkade\\RetailDirections\\": "src/"
+        }
+    },
+    "autoload-dev": {
+        "psr-4": {
+            "Arkade\\RetailDirections\\": "tests/"
+        }
+    },
+    "require": {
+        "nesbot/carbon": "^1.22",
+        "illuminate/support": "^5.4",
+        "zendframework/zend-soap": "^2.6"
+    },
+    "require-dev": {
+        "phpunit/phpunit": "^6.1"
+    }
+}
