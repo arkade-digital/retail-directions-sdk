@@ -40,12 +40,24 @@ class Client
     /**
      * Client constructor.
      *
-     * @param string      $wsdl URL or path to WSDL file
-     * @param Soap\Client $client
+     * @param string $wsdl URL or path to WSDL file
      */
-    public function __construct($wsdl, Soap\Client $client = null)
+    public function __construct($wsdl)
     {
-        $this->client = $client ?: $this->buildClient($wsdl);
+        $this->client = $this->buildClient($wsdl);
+    }
+
+    /**
+     * Set client for SOAP communication.
+     *
+     * @param  Soap\Client $client
+     * @return Client
+     */
+    public function setClient(Soap\Client $client)
+    {
+        $this->client = $client;
+
+        return $this;
     }
 
     /**
@@ -95,23 +107,13 @@ class Client
     }
 
     /**
-     * Return auth module.
+     * Return customers module.
      *
-     * @return Modules\Auth
+     * @return Modules\Customers
      */
-    public function auth()
+    public function customers()
     {
-        return new Modules\Auth($this);
-    }
-
-    /**
-     * Return users module.
-     *
-     * @return Modules\Users
-     */
-    public function users()
-    {
-        return new Modules\Users($this);
+        return new Modules\Customers($this);
     }
 
     /**
@@ -120,6 +122,7 @@ class Client
      * @param  string $serviceName
      * @param  array  $attributes
      * @return mixed
+     * @throws Exceptions\ServiceException
      */
     public function call($serviceName, $attributes = [])
     {
@@ -136,17 +139,21 @@ class Client
                 ]
             ]);
         } finally {
-            if ($this->historyContainer) {
-                $this->historyContainer->push(new Fluent([
-                    'request'         => $this->client->getLastRequest(),
-                    'requestHeaders'  => $this->client->getLastRequestHeaders(),
-                    'response'        => $this->client->getLastResponse(),
-                    'responseHeaders' => $this->client->getLastResponseHeaders()
-                ]));
-            }
+            $this->persistHistory(
+                isset($response) ? $response->RDServiceResult : null
+            );
         }
 
-//        var_dump($response); die;
+        $response = $this->parseResponseXml($response->RDServiceResult);
+
+        if ($response->ErrorResponse) {
+            throw (new Exceptions\ServiceException(
+                (string) $response->ErrorResponse->errorMessage,
+                (int) $response->ErrorResponse->errorNumber
+            ))->setHistoryContainer($this->historyContainer);
+        }
+
+        return $response;
     }
 
     /**
@@ -239,5 +246,35 @@ EOT;
                 $element->addChild($key, htmlspecialchars($value));
             }
         }
+    }
+
+    /**
+     * Parse the response XML string.
+     *
+     * @param  string $response
+     * @return \SimpleXMLElement
+     */
+    protected function parseResponseXml($response)
+    {
+        return new \SimpleXMLElement($response);
+    }
+
+    /**
+     * Persist last request into history container.
+     *
+     * @param  string $serviceResult XML string from SOAP service result
+     * @return void
+     */
+    protected function persistHistory($serviceResult = null)
+    {
+        if (! $this->historyContainer) return;
+
+        $this->historyContainer->push(new Fluent([
+            'request'         => html_entity_decode($this->client->getLastRequest()),
+            'requestHeaders'  => html_entity_decode($this->client->getLastRequestHeaders()),
+            'response'        => html_entity_decode($this->client->getLastResponse()),
+            'responseHeaders' => html_entity_decode($this->client->getLastResponseHeaders()),
+            'serviceResult'   => substr($serviceResult, 3) // Trim weird characters from beginning
+        ]));
     }
 }
