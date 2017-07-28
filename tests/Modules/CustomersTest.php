@@ -21,7 +21,7 @@ class CustomersTest extends RetailDirections\TestCase
         $client = (new RetailDirections\Client($this->mockWSDL()))->setClient($soapClient);
 
         $client->customers()->findById(
-            '050101000005',
+            '100400000001',
             Carbon::parse('2017-07-25T06:45:55.448605+00:00')
         );
     }
@@ -42,7 +42,7 @@ class CustomersTest extends RetailDirections\TestCase
         $client = (new RetailDirections\Client($this->mockWSDL()))->setClient($soapClient);
 
         $client->customers()->findById(
-            '050101000005',
+            '100400000001',
             Carbon::parse('2017-07-25T06:45:55.448605+00:00')
         );
     }
@@ -60,12 +60,12 @@ class CustomersTest extends RetailDirections\TestCase
         $client = (new RetailDirections\Client($this->mockWSDL()))->setClient($soapClient);
 
         $customer = $client->customers()->findById(
-            '050101000005',
+            '100400000001',
             Carbon::parse('2017-07-25T06:45:55.448605+00:00')
         );
 
         $this->assertInstanceOf(RetailDirections\Customer::class, $customer);
-        $this->assertEquals('050101000005', $customer->getId());
+        $this->assertEquals('100400000001', $customer->getId());
         $this->assertEquals('MR MALCOLM', $customer->firstName);
         $this->assertEquals('TURNBALL', $customer->lastName);
         $this->assertEquals('12345678', $customer->mobileNumber);
@@ -84,7 +84,7 @@ class CustomersTest extends RetailDirections\TestCase
         $client = (new RetailDirections\Client($this->mockWSDL()))->setClient($soapClient);
 
         $customer = $client->customers()->findById(
-            '050101000005',
+            '100400000001',
             Carbon::parse('2017-07-25T06:45:55.448605+00:00')
         );
 
@@ -165,9 +165,117 @@ class CustomersTest extends RetailDirections\TestCase
 
         $this->assertInstanceOf(Collection::class, $customers);
 
-        $this->assertEquals('100405002434', $customers->first()->getId());
+        $this->assertEquals('100400000001', $customers->first()->getId());
         $this->assertEquals('Malcolm', $customers->first()->firstName);
         $this->assertEquals('Turnball', $customers->first()->lastName);
+    }
+
+    public function testCreateOrUpdateSendsCorrectRequest()
+    {
+        $soapClient = $this->mockSoapClient();
+
+        $this->expectSOAP(
+            $soapClient,
+            'Customers/CustomerCreateWithIdRequest',
+            'Customers/CustomerCreateSuccessResponse'
+        );
+
+        $client = (new RetailDirections\Client($this->mockWSDL()))->setClient($soapClient);
+
+        $client->customers()->createOrUpdate(new RetailDirections\Customer(
+            '100400000001',
+            [
+                'firstName'        => 'Malcolm',
+                'lastName'         => 'Turnball',
+                'emailAddress'     => 'malcolm.turnball@gov.au',
+                'homeLocationCode' => '0202',
+                'origin'           => 'Google'
+            ]
+        ));
+    }
+
+    /**
+     * @expectedException \Arkade\RetailDirections\Exceptions\ValidationException
+     */
+    public function testCreateOrUpdateThrowsValidationException()
+    {
+        $soapClient = $this->mockSoapClient();
+
+        $this->expectSOAP(
+            $soapClient,
+            'Customers/CustomerCreateWithIdRequest',
+            'Customers/CustomerCreateFailedValidationResponse'
+        );
+
+        $client = (new RetailDirections\Client($this->mockWSDL()))->setClient($soapClient);
+
+        $client->customers()->createOrUpdate(new RetailDirections\Customer(
+            '100400000001',
+            [
+                'firstName'        => 'Malcolm',
+                'lastName'         => 'Turnball',
+                'emailAddress'     => 'malcolm.turnball@gov.au',
+                'homeLocationCode' => '0202',
+                'origin'           => 'Google'
+            ]
+        ));
+    }
+
+    /**
+     * @expectedException \Arkade\RetailDirections\Exceptions\AlreadyExistsException
+     */
+    public function testCreateOrUpdateThrowsAlreadyExistsException()
+    {
+        $soapClient = $this->mockSoapClient();
+
+        $this->expectSOAP(
+            $soapClient,
+            'Customers/CustomerCreateWithIdRequest',
+            'Customers/CustomerCreateFailedExistsResponse'
+        );
+
+        $client = (new RetailDirections\Client($this->mockWSDL()))->setClient($soapClient);
+
+        $client->customers()->createOrUpdate(new RetailDirections\Customer(
+            '100400000001',
+            [
+                'firstName'        => 'Malcolm',
+                'lastName'         => 'Turnball',
+                'emailAddress'     => 'malcolm.turnball@gov.au',
+                'homeLocationCode' => '0202',
+                'origin'           => 'Google'
+            ]
+        ));
+    }
+
+    public function testCreateOrUpdateReturnsPopulatedCustomerEntity()
+    {
+        $soapClient = $this->mockSoapClient();
+
+        $this->expectSOAP(
+            $soapClient,
+            'Customers/CustomerCreateWithIdRequest',
+            'Customers/CustomerCreateSuccessResponse'
+        );
+
+        $client = (new RetailDirections\Client($this->mockWSDL()))->setClient($soapClient);
+
+        $customer = $client->customers()->createOrUpdate(new RetailDirections\Customer(
+            '100400000001',
+            [
+                'firstName'        => 'Malcolm',
+                'lastName'         => 'Turnball',
+                'emailAddress'     => 'malcolm.turnball@gov.au',
+                'homeLocationCode' => '0202',
+                'origin'           => 'Google'
+            ]
+        ));
+
+        $this->assertInstanceOf(RetailDirections\Customer::class, $customer);
+
+        $this->assertEquals('100400000001', $customer->getId());
+        $this->assertEquals('Malcolm', $customer->firstName);
+        $this->assertEquals('Turnball', $customer->lastName);
     }
 
     public function testCreateSendsCorrectRequest()
@@ -176,19 +284,28 @@ class CustomersTest extends RetailDirections\TestCase
 
         $this->expectSOAP(
             $soapClient,
-            'Customers/CustomerCreateRequest',
+            'Customers/CustomerGetRequest',
+            'Customers/CustomerGetFailedResponse'
+        );
+
+        $this->expectSOAP(
+            $soapClient,
+            'Customers/CustomerCreateWithIdRequest',
             'Customers/CustomerCreateSuccessResponse'
         );
 
         $client = (new RetailDirections\Client($this->mockWSDL()))->setClient($soapClient);
 
-        $client->customers()->create([
-            'firstName'        => 'Malcolm',
-            'lastName'         => 'Turnball',
-            'emailAddress'     => 'malcolm.turnball@gov.au',
-            'homeLocationCode' => '0202',
-            'origin'           => 'Google'
-        ]);
+        $client->customers()->create(new RetailDirections\Customer(
+            '100400000001',
+            [
+                'firstName'        => 'Malcolm',
+                'lastName'         => 'Turnball',
+                'emailAddress'     => 'malcolm.turnball@gov.au',
+                'homeLocationCode' => '0202',
+                'origin'           => 'Google'
+            ]
+        ), Carbon::parse('2017-07-25T06:45:55.448605+00:00'));
     }
 
     /**
@@ -200,46 +317,127 @@ class CustomersTest extends RetailDirections\TestCase
 
         $this->expectSOAP(
             $soapClient,
-            'Customers/CustomerCreateRequest',
+            'Customers/CustomerGetRequest',
+            'Customers/CustomerGetFailedResponse'
+        );
+
+        $this->expectSOAP(
+            $soapClient,
+            'Customers/CustomerCreateWithIdRequest',
             'Customers/CustomerCreateFailedValidationResponse'
         );
 
         $client = (new RetailDirections\Client($this->mockWSDL()))->setClient($soapClient);
 
-        $client->customers()->create([
-            'firstName'        => 'Malcolm',
-            'lastName'         => 'Turnball',
-            'emailAddress'     => 'malcolm.turnball@gov.au',
-            'homeLocationCode' => '0202',
-            'origin'           => 'Google'
-        ]);
+        $client->customers()->create(new RetailDirections\Customer(
+            '100400000001',
+            [
+                'firstName'        => 'Malcolm',
+                'lastName'         => 'Turnball',
+                'emailAddress'     => 'malcolm.turnball@gov.au',
+                'homeLocationCode' => '0202',
+                'origin'           => 'Google'
+            ]
+        ), Carbon::parse('2017-07-25T06:45:55.448605+00:00'));
     }
 
     /**
      * @expectedException \Arkade\RetailDirections\Exceptions\AlreadyExistsException
      */
-    public function testCreateThrowsAlreadyExistsException()
+    public function testCreateThrowsAlreadyExistsExceptionForId()
     {
         $soapClient = $this->mockSoapClient();
 
         $this->expectSOAP(
             $soapClient,
-            'Customers/CustomerCreateRequest',
+            'Customers/CustomerGetRequest',
+            'Customers/CustomerGetSuccessResponse'
+        );
+
+        $client = (new RetailDirections\Client($this->mockWSDL()))->setClient($soapClient);
+
+        $client->customers()->create(new RetailDirections\Customer(
+            '100400000001',
+            [
+                'firstName'        => 'Malcolm',
+                'lastName'         => 'Turnball',
+                'emailAddress'     => 'malcolm.turnball@gov.au',
+                'homeLocationCode' => '0202',
+                'origin'           => 'Google'
+            ]
+        ), Carbon::parse('2017-07-25T06:45:55.448605+00:00'));
+    }
+
+    /**
+     * @expectedException \Arkade\RetailDirections\Exceptions\AlreadyExistsException
+     */
+    public function testCreateThrowsAlreadyExistsExceptionForEmail()
+    {
+        $soapClient = $this->mockSoapClient();
+
+        $this->expectSOAP(
+            $soapClient,
+            'Customers/CustomerGetRequest',
+            'Customers/CustomerGetFailedResponse'
+        );
+
+        $this->expectSOAP(
+            $soapClient,
+            'Customers/CustomerCreateWithIdRequest',
             'Customers/CustomerCreateFailedExistsResponse'
         );
 
         $client = (new RetailDirections\Client($this->mockWSDL()))->setClient($soapClient);
 
-        $client->customers()->create([
-            'firstName'        => 'Malcolm',
-            'lastName'         => 'Turnball',
-            'emailAddress'     => 'malcolm.turnball@gov.au',
-            'homeLocationCode' => '0202',
-            'origin'           => 'Google'
-        ]);
+        $client->customers()->create(new RetailDirections\Customer(
+            '100400000001',
+            [
+                'firstName'        => 'Malcolm',
+                'lastName'         => 'Turnball',
+                'emailAddress'     => 'malcolm.turnball@gov.au',
+                'homeLocationCode' => '0202',
+                'origin'           => 'Google'
+            ]
+        ), Carbon::parse('2017-07-25T06:45:55.448605+00:00'));
     }
 
     public function testCreateReturnsPopulatedCustomerEntity()
+    {
+        $soapClient = $this->mockSoapClient();
+
+        $this->expectSOAP(
+            $soapClient,
+            'Customers/CustomerGetRequest',
+            'Customers/CustomerGetFailedResponse'
+        );
+
+        $this->expectSOAP(
+            $soapClient,
+            'Customers/CustomerCreateWithIdRequest',
+            'Customers/CustomerCreateSuccessResponse'
+        );
+
+        $client = (new RetailDirections\Client($this->mockWSDL()))->setClient($soapClient);
+
+        $customer = $client->customers()->create(new RetailDirections\Customer(
+            '100400000001',
+            [
+                'firstName'        => 'Malcolm',
+                'lastName'         => 'Turnball',
+                'emailAddress'     => 'malcolm.turnball@gov.au',
+                'homeLocationCode' => '0202',
+                'origin'           => 'Google'
+            ]
+        ), Carbon::parse('2017-07-25T06:45:55.448605+00:00'));
+
+        $this->assertInstanceOf(RetailDirections\Customer::class, $customer);
+
+        $this->assertEquals('100400000001', $customer->getId());
+        $this->assertEquals('Malcolm', $customer->firstName);
+        $this->assertEquals('Turnball', $customer->lastName);
+    }
+
+    public function testCreateOrUpdateFromAttributesSendsCorrectRequest()
     {
         $soapClient = $this->mockSoapClient();
 
@@ -251,7 +449,76 @@ class CustomersTest extends RetailDirections\TestCase
 
         $client = (new RetailDirections\Client($this->mockWSDL()))->setClient($soapClient);
 
-        $customer = $client->customers()->create([
+        $client->customers()->createOrUpdateFromAttributes([
+            'firstName'        => 'Malcolm',
+            'lastName'         => 'Turnball',
+            'emailAddress'     => 'malcolm.turnball@gov.au',
+            'homeLocationCode' => '0202',
+            'origin'           => 'Google'
+        ]);
+    }
+
+    /**
+     * @expectedException \Arkade\RetailDirections\Exceptions\ValidationException
+     */
+    public function testCreateOrUpdateFromAttributesThrowsValidationException()
+    {
+        $soapClient = $this->mockSoapClient();
+
+        $this->expectSOAP(
+            $soapClient,
+            'Customers/CustomerCreateRequest',
+            'Customers/CustomerCreateFailedValidationResponse'
+        );
+
+        $client = (new RetailDirections\Client($this->mockWSDL()))->setClient($soapClient);
+
+        $client->customers()->createOrUpdateFromAttributes([
+            'firstName'        => 'Malcolm',
+            'lastName'         => 'Turnball',
+            'emailAddress'     => 'malcolm.turnball@gov.au',
+            'homeLocationCode' => '0202',
+            'origin'           => 'Google'
+        ]);
+    }
+
+    /**
+     * @expectedException \Arkade\RetailDirections\Exceptions\AlreadyExistsException
+     */
+    public function testCreateOrUpdateFromAttributesThrowsAlreadyExistsException()
+    {
+        $soapClient = $this->mockSoapClient();
+
+        $this->expectSOAP(
+            $soapClient,
+            'Customers/CustomerCreateRequest',
+            'Customers/CustomerCreateFailedExistsResponse'
+        );
+
+        $client = (new RetailDirections\Client($this->mockWSDL()))->setClient($soapClient);
+
+        $client->customers()->createOrUpdateFromAttributes([
+            'firstName'        => 'Malcolm',
+            'lastName'         => 'Turnball',
+            'emailAddress'     => 'malcolm.turnball@gov.au',
+            'homeLocationCode' => '0202',
+            'origin'           => 'Google'
+        ]);
+    }
+
+    public function testCreateOrUpdateFromAttributesReturnsPopulatedCustomerEntity()
+    {
+        $soapClient = $this->mockSoapClient();
+
+        $this->expectSOAP(
+            $soapClient,
+            'Customers/CustomerCreateRequest',
+            'Customers/CustomerCreateSuccessResponse'
+        );
+
+        $client = (new RetailDirections\Client($this->mockWSDL()))->setClient($soapClient);
+
+        $customer = $client->customers()->createOrUpdateFromAttributes([
             'firstName'        => 'Malcolm',
             'lastName'         => 'Turnball',
             'emailAddress'     => 'malcolm.turnball@gov.au',
@@ -266,7 +533,7 @@ class CustomersTest extends RetailDirections\TestCase
         $this->assertEquals('Turnball', $customer->lastName);
     }
 
-//    public function testCreateSuccess()
+//    public function testUpdateSuccess()
 //    {
 //        $history = new Collection;
 //
@@ -275,9 +542,10 @@ class CustomersTest extends RetailDirections\TestCase
 //
 //        try {
 //            $client->customers()->create([
+//                'customerId'       => '100400000004',
 //                'firstName'        => 'Dan',
 //                'lastName'         => 'Greaves',
-//                'emailAddress'     => 'dan@arkade.com.au',
+//                'emailAddress'     => 'dan+test2@arkade.com.au',
 //                'homeLocationCode' => '1004',
 //                'origin'           => 'Google'
 //            ]);

@@ -87,13 +87,75 @@ class Customers extends AbstractModule
     }
 
     /**
-     * Create a customer from provided attributes.
+     * Create provided customer.
      *
-     * @param  array      $attributes
+     * @param  Customer $customer
+     * @param  Carbon   $datetime Optional datetime for findById request
      * @return Customer
+     * @throws Exceptions\AlreadyExistsException
+     * @throws Exceptions\ValidationException
      * @throws Exceptions\ServiceException
      */
-    public function create(array $attributes)
+    public function create(Customer $customer, Carbon $datetime = null)
+    {
+        // Throw AlreadyExistsException if customer already exists
+        try {
+            if ($this->findById($customer->getId(), $datetime)) {
+                throw new Exceptions\AlreadyExistsException;
+            }
+        } catch (Exceptions\NotFoundException $e) {}
+
+        return $this->createOrUpdate($customer);
+    }
+
+    /**
+     * Update provided customer.
+     *
+     * @param  Customer $customer
+     * @param  Carbon   $datetime Optional datetime for findById request
+     * @return Customer
+     * @throws Exceptions\NotFoundException
+     * @throws Exceptions\AlreadyExistsException
+     * @throws Exceptions\ValidationException
+     * @throws Exceptions\ServiceException
+     */
+    public function update(Customer $customer, Carbon $datetime = null)
+    {
+        // Throw NotFoundException if customer does not exist
+        $this->findById($customer->getId(), $datetime);
+
+        return $this->createOrUpdate($customer);
+    }
+
+    /**
+     * Create or update the provided customer.
+     *
+     * @param  Customer $customer
+     * @return Customer
+     * @throws Exceptions\AlreadyExistsException
+     * @throws Exceptions\ValidationException
+     * @throws Exceptions\ServiceException
+     */
+    public function createOrUpdate(Customer $customer)
+    {
+        return $this->createOrUpdateFromAttributes(array_merge(
+            $customer->getAttributes(),
+            ['customerId' => $customer->getId()]
+        ));
+    }
+
+    /**
+     * Create or update a customer from provided attributes.
+     *
+     * If the `customerId` attribute is provided, this will cause an update.
+     *
+     * @param  array $attributes
+     * @return Customer
+     * @throws Exceptions\AlreadyExistsException
+     * @throws Exceptions\ValidationException
+     * @throws Exceptions\ServiceException
+     */
+    public function createOrUpdateFromAttributes(array $attributes)
     {
         try {
             $response = $this->client->call('CustomerEdit', [
