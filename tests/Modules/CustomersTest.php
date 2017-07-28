@@ -169,4 +169,127 @@ class CustomersTest extends RetailDirections\TestCase
         $this->assertEquals('Malcolm', $customers->first()->firstName);
         $this->assertEquals('Turnball', $customers->first()->lastName);
     }
+
+    public function testCreateSendsCorrectRequest()
+    {
+        $soapClient = $this->mockSoapClient();
+
+        $this->expectSOAP(
+            $soapClient,
+            'Customers/CustomerCreateRequest',
+            'Customers/CustomerCreateSuccessResponse'
+        );
+
+        $client = (new RetailDirections\Client($this->mockWSDL()))->setClient($soapClient);
+
+        $client->customers()->create([
+            'firstName'        => 'Malcolm',
+            'lastName'         => 'Turnball',
+            'emailAddress'     => 'malcolm.turnball@gov.au',
+            'homeLocationCode' => '0202',
+            'origin'           => 'Google'
+        ]);
+    }
+
+    /**
+     * @expectedException \Arkade\RetailDirections\Exceptions\ValidationException
+     */
+    public function testCreateThrowsValidationException()
+    {
+        $soapClient = $this->mockSoapClient();
+
+        $this->expectSOAP(
+            $soapClient,
+            'Customers/CustomerCreateRequest',
+            'Customers/CustomerCreateFailedValidationResponse'
+        );
+
+        $client = (new RetailDirections\Client($this->mockWSDL()))->setClient($soapClient);
+
+        $client->customers()->create([
+            'firstName'        => 'Malcolm',
+            'lastName'         => 'Turnball',
+            'emailAddress'     => 'malcolm.turnball@gov.au',
+            'homeLocationCode' => '0202',
+            'origin'           => 'Google'
+        ]);
+    }
+
+    /**
+     * @expectedException \Arkade\RetailDirections\Exceptions\AlreadyExistsException
+     */
+    public function testCreateThrowsAlreadyExistsException()
+    {
+        $soapClient = $this->mockSoapClient();
+
+        $this->expectSOAP(
+            $soapClient,
+            'Customers/CustomerCreateRequest',
+            'Customers/CustomerCreateFailedExistsResponse'
+        );
+
+        $client = (new RetailDirections\Client($this->mockWSDL()))->setClient($soapClient);
+
+        $client->customers()->create([
+            'firstName'        => 'Malcolm',
+            'lastName'         => 'Turnball',
+            'emailAddress'     => 'malcolm.turnball@gov.au',
+            'homeLocationCode' => '0202',
+            'origin'           => 'Google'
+        ]);
+    }
+
+    public function testCreateReturnsPopulatedCustomerEntity()
+    {
+        $soapClient = $this->mockSoapClient();
+
+        $this->expectSOAP(
+            $soapClient,
+            'Customers/CustomerCreateRequest',
+            'Customers/CustomerCreateSuccessResponse'
+        );
+
+        $client = (new RetailDirections\Client($this->mockWSDL()))->setClient($soapClient);
+
+        $customer = $client->customers()->create([
+            'firstName'        => 'Malcolm',
+            'lastName'         => 'Turnball',
+            'emailAddress'     => 'malcolm.turnball@gov.au',
+            'homeLocationCode' => '0202',
+            'origin'           => 'Google'
+        ]);
+
+        $this->assertInstanceOf(RetailDirections\Customer::class, $customer);
+
+        $this->assertEquals('100400000001', $customer->getId());
+        $this->assertEquals('Malcolm', $customer->firstName);
+        $this->assertEquals('Turnball', $customer->lastName);
+    }
+
+//    public function testCreateSuccess()
+//    {
+//        $history = new Collection;
+//
+//        $client = (new RetailDirections\Client($this->sandboxWSDL()))
+//            ->setHistoryContainer($history);
+//
+//        try {
+//            $client->customers()->create([
+//                'firstName'        => 'Dan',
+//                'lastName'         => 'Greaves',
+//                'emailAddress'     => 'dan@arkade.com.au',
+//                'homeLocationCode' => '1004',
+//                'origin'           => 'Google'
+//            ]);
+//        } catch (\Exception $e) {
+//            //
+//        }
+//
+////        file_put_contents(
+////            __DIR__.'/../Stubs/Customers/CustomerCreateFailedExistsResponse.xml',
+////            $history->first()->serviceResult
+////        );
+//
+//        var_dump($history->first()->serviceResult); die;
+//    }
 }

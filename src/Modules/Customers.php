@@ -85,4 +85,36 @@ class Customers extends AbstractModule
 
         return $collection;
     }
+
+    /**
+     * Create a customer from provided attributes.
+     *
+     * @param  array      $attributes
+     * @return Customer
+     * @throws Exceptions\ServiceException
+     */
+    public function create(array $attributes)
+    {
+        try {
+            $response = $this->client->call('CustomerEdit', [
+                'Customer' => $attributes
+            ]);
+        } catch (Exceptions\ServiceException $e) {
+
+            if (58104 == $e->getCode()) {
+                throw (new Exceptions\AlreadyExistsException)
+                    ->setHistoryContainer($e->getHistoryContainer());
+            }
+
+            if (58110 == $e->getCode()) {
+                throw (new Exceptions\ValidationException)
+                    ->setHistoryContainer($e->getHistoryContainer());
+            }
+
+            throw $e;
+
+        }
+
+        return Customer::fromXml($response->Customer);
+    }
 }
