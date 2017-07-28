@@ -106,4 +106,67 @@ class CustomersTest extends RetailDirections\TestCase
         $this->assertEquals('1 PARLIAMENT DR', $customer->getAddresses()->get(1)->address1);
         $this->assertEquals('CANBERRA', $customer->getAddresses()->get(1)->suburb);
     }
+
+    public function testFindByEmailSendsCorrectRequest()
+    {
+        $soapClient = $this->mockSoapClient();
+
+        $this->expectSOAP(
+            $soapClient,
+            'Customers/CustomerGetByEmailRequest',
+            'Customers/CustomerGetByEmailSuccessResponse'
+        );
+
+        $client = (new RetailDirections\Client($this->mockWSDL()))->setClient($soapClient);
+
+        $client->customers()->findByEmail(
+            'malcolm.turnball@gov.au',
+            Carbon::parse('2017-07-28T04:42:44.191054+00:00')
+        );
+    }
+
+    /**
+     * @expectedException \Arkade\RetailDirections\Exceptions\NotFoundException
+     */
+    public function testFindByEmailThrowsNotFoundExceptionForMissingEmail()
+    {
+        $soapClient = $this->mockSoapClient();
+
+        $this->expectSOAP(
+            $soapClient,
+            'Customers/CustomerGetByEmailRequest',
+            'Customers/CustomerGetByEmailFailedResponse'
+        );
+
+        $client = (new RetailDirections\Client($this->mockWSDL()))->setClient($soapClient);
+
+        $client->customers()->findByEmail(
+            'malcolm.turnball@gov.au',
+            Carbon::parse('2017-07-28T04:42:44.191054+00:00')
+        );
+    }
+
+    public function testFindByEmailReturnsPopulatedCustomerEntity()
+    {
+        $soapClient = $this->mockSoapClient();
+
+        $this->expectSOAP(
+            $soapClient,
+            'Customers/CustomerGetByEmailRequest',
+            'Customers/CustomerGetByEmailSuccessResponse'
+        );
+
+        $client = (new RetailDirections\Client($this->mockWSDL()))->setClient($soapClient);
+
+        $customers = $client->customers()->findByEmail(
+            'malcolm.turnball@gov.au',
+            Carbon::parse('2017-07-28T04:42:44.191054+00:00')
+        );
+
+        $this->assertInstanceOf(Collection::class, $customers);
+
+        $this->assertEquals('100405002434', $customers->first()->getId());
+        $this->assertEquals('Malcolm', $customers->first()->firstName);
+        $this->assertEquals('Turnball', $customers->first()->lastName);
+    }
 }

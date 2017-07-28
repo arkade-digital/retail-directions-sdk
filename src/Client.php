@@ -140,6 +140,7 @@ class Client
             ]);
         } finally {
             $this->persistHistory(
+                $request,
                 isset($response) ? $response->RDServiceResult : null
             );
         }
@@ -262,16 +263,18 @@ EOT;
     /**
      * Persist last request into history container.
      *
-     * @param  string $serviceResult XML string from SOAP service result
+     * @param  string $serviceRequest XML string from SOAP service request
+     * @param  string $serviceResult  XML string from SOAP service result
      * @return void
      */
-    protected function persistHistory($serviceResult = null)
+    protected function persistHistory($serviceRequest, $serviceResult = null)
     {
         if (! $this->historyContainer) return;
 
         $this->historyContainer->push(new Fluent([
             'request'         => html_entity_decode($this->client->getLastRequest()),
             'requestHeaders'  => html_entity_decode($this->client->getLastRequestHeaders()),
+            'serviceRequest'  => html_entity_decode($serviceRequest),
             'response'        => html_entity_decode($this->client->getLastResponse()),
             'responseHeaders' => html_entity_decode($this->client->getLastResponseHeaders()),
             'serviceResult'   => substr($serviceResult, 3) // Trim weird characters from beginning

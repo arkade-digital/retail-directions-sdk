@@ -1,0 +1,1 @@
+<CustomerGetByEmailRequest xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:xsd="http://www.w3.org/2001/XMLSchema" xmlns="http://www.retaildirections.com/"><CustomerGetByEmail><emailAddress>malcolm.turnball@gov.au</emailAddress><requestDateTime>2017-07-28T04:42:44.191054+00:00</requestDateTime></CustomerGetByEmail></CustomerGetByEmailRequest>
