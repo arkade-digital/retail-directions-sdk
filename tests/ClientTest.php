@@ -53,7 +53,7 @@ class ClientTest extends TestCase
 
         try {
             $client->customers()->findById(
-                'ABC123',
+                '050101000005',
                 Carbon::parse('2017-07-25T06:45:55.448605+00:00')
             );
         } catch (\SoapFault $e) {

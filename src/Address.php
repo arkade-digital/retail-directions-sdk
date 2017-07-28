@@ -27,6 +27,16 @@ class Address extends Fluent
     }
 
     /**
+     * Return Retail Directions address ID.
+     *
+     * @return string
+     */
+    public function getId()
+    {
+        return $this->id;
+    }
+
+    /**
      * Create entity from provided XML element.
      *
      * @param  \SimpleXMLElement $xml
