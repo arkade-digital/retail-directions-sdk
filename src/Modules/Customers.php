@@ -3,8 +3,9 @@
 namespace Arkade\RetailDirections\Modules;
 
 use Carbon\Carbon;
+use Arkade\RetailDirections\Address;
+use Arkade\RetailDirections\Customer;
 use Arkade\RetailDirections\Exceptions;
-use Mockery\Exception;
 
 class Customers extends AbstractModule
 {
@@ -13,7 +14,7 @@ class Customers extends AbstractModule
      *
      * @param  string      $id
      * @param  Carbon|null $datetime
-     * @return Entities\Customer
+     * @return Customer
      * @throws Exceptions\NotFoundException
      * @throws Exceptions\ServiceException
      */
@@ -36,18 +37,13 @@ class Customers extends AbstractModule
             throw $e;
 
         }
-    }
 
-    /**
-     * Find a customer by search attributes.
-     *
-     * @param  array $searchAttributes
-     * @return Entities\Customer
-     */
-    public function create(array $searchAttributes)
-    {
-        $response = $this->client->call('CustomerFind', [
-            'CustomerFind' => $searchAttributes
-        ]);
+        $customer = Customer::fromXml($response->Customer);
+
+        foreach ($response->Addresses->Address as $address) {
+            $customer->getAddresses()->push(Address::fromXml($address));
+        }
+
+        return $customer;
     }
 }
