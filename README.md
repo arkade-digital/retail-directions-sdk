@@ -9,6 +9,7 @@ This SDK provides simple access to the SOAP based Retail Directions Web Service 
 - [Creating a client](#creating-a-client)
 - [Integrating with Laravel](#integrating-with-laravel)
 - [Available methods](#available-methods)
+- [Recording history](#recording-history)
 - [Contributing](#contributing)
 
 ## Getting started
@@ -22,14 +23,7 @@ composer require arkade/retail-directions-sdk
 
 ## Prerequisites
 
-To begin sending requests to App Engine, you will need a few pieces of information.
-
-- __Endpoint__ This is the URL for the specific App Engine instance you wish to connect to. It will look something like `https://client.omneo.io/api/`. Note the trailing slash is required.
-
-Depending on your authentication mechanism, you will need some secrets associated with that authentication type. As we currently only support HMAC signature authentication, you will need the following items.
-
-- __HMAC Key__ Internally called `access_key_id`, this is generated as part of your App Engine user profile. Ask your App Engine instance administrator for this information.
-- __HMAC Secret__ Internally called `access_key_secret`, this is also generated as part of your App Engine user profile. Ask your App Engine instance administrator for this information.
+Before sending requests to Retail Directions, you will need a username and password.
 
 ## Creating a client
 
@@ -38,11 +32,13 @@ Depending on your authentication mechanism, you will need some secrets associate
 To begin using the SDK, you will first need to create an authenticated client with the information you have obtained above.
 
 ```php
-$client = (new Client('https://client.omneo.io/api/'))
-    ->setCredentials(new Credentials\HMAC('YOUR_KEY', 'YOUR_SECRET'));
+use Arkade\RetailDirections;
+
+$client = (new RetailDirections\Client('http://59.154.22.13/RDWS/RDWS.asmx?WSDL'))
+    ->setCredentials(new RetailDirections\Credentials('YOUR_USERNAME', 'YOUR_PASSWORD'));
 ```
 
-If you create a client without setting credentials, all your requests will be sent without appropriate authentication headers and will most likely result in an unauthorised response.
+You do not have to set credentials on the client. Some sandbox environments allow unauthenticated access. If you don't set credentials, all requests will be sent without authentication headers. In a production environment, this will most likely result in an unauthorized response.
 
 ## Integrating with Laravel
 
@@ -53,7 +49,7 @@ This package ships with a Laravel specific service provider which allows you to 
 Add the following to the `providers` array in your `config/app.php` file.
 
 ```php
-Arkade\AppEngine\LaravelServiceProvider::class
+Arkade\RetailDirections\LaravelServiceProvider::class
 ```
 
 ### Adding config keys
@@ -61,10 +57,10 @@ Arkade\AppEngine\LaravelServiceProvider::class
 In your `config/services.php` file, add the following to the array.
 
 ```php
-'appengine' => [
-    'endpoint' => env('APPENGINE_ENDPOINT'),
-    'key'      => env('APPENGINE_KEY'),
-    'secret'   => env('APPENGINE_SECRET'),
+'retaildirections' => [
+    'wsdl'     => env('RETAILDIRECTIONS_WSDL'),
+    'username' => env('RETAILDIRECTIONS_USERNAME'),
+    'password' => env('RETAILDIRECTIONS_PASSWORD'),
 ]
 ```
 
@@ -73,9 +69,9 @@ In your `config/services.php` file, add the following to the array.
 In your `.env` file, add the following keys.
 
 ```ini
-APPENGINE_ENDPOINT=
-APPENGINE_KEY=
-APPENGINE_SECRET=
+RETAILDIRECTIONS_WSDL=
+RETAILDIRECTIONS_USERNAME=
+RETAILDIRECTIONS_PASSWORD=
 ```
 
 ### Resolving a client
@@ -85,7 +81,7 @@ To resolve a fully authenticated client, you simply pull it from the service con
 #### Type hinting
 
 ```php
-use Arkade\AppEngine\Client;
+use Arkade\RetailDirections\Client;
 
 public function yourControllerMethod(Client $client) {
     // Call methods on $client
@@ -95,7 +91,7 @@ public function yourControllerMethod(Client $client) {
 #### Using the `app()` helper
 
 ```php
-use Arkade\AppEngine\Client;
+use Arkade\RetailDirections\Client;
 
 public function anyMethod() {
     $client = app(Client::class);
@@ -105,28 +101,173 @@ public function anyMethod() {
 
 ## Available methods
 
-### Auth module
+### Customers module
 
-#### Authenticate user credentials
+#### `findById($id)`
 
-When provided a valid email address and password combination, this method will return an `Arkade\AppEngine\Entities\User` instance containing the attributes that App Engine holds for this user.
+When provided a valid Retail Directions ID, this method will return an `Arkade\RetailDirections\Customer` instance containing all the attributes that Retail Directions holds for this customer.
 
-If the provided credentials are incorrect, this method will throw `Arkade\AppEngine\Exceptions\UnauthorizedException` which you should handle in your application.
+If the provided ID is invalid, this method will throw `Arkade\RetailDirections\Exceptions\NotFoundException` which you should handle in your application.
 
 ```php
-$client->auth()->authenticateUserCredentials($email, $password);
+$client->customers()->findById('123456');
 ```
 
-### Users module
+#### `findByEmail($email)`
 
-#### Create or update (sync) a user
+When provided a valid email address, this method will return a `Illuminate\Support\Collection` instance containing `Arkade\RetailDirections\Customer` instances that have the provided email address.
 
-When provided an array of attributes, a matching user will be created or updated within Loyalty Engine. At a minimum, attributes should contain an `email` key which is used to identify a user.
-
-If successful, this method will return a `Arkade\AppEngine\Entities\User` instance containing the attributes that App Engine now holds for this user.
+If no customers with this email address are located, this method will throw `Arkade\RetailDirections\Exceptions\NotFoundException` which you should handle in your application.
 
 ```php
-$client->users()->sync($attributes);
+$client->customers()->findByEmail('foo@example.com');
+```
+
+#### `create(Customer $customer)`
+
+Create a Retail Directions customer with a pre-defined ID.
+
+To utilise this method, you first need to instantiate a `Arkade\RetailDirections\Customer` instance with your desired ID and attributes. Once instantiated, you pass this instance into the `create()` method.
+
+At the minimum, you must provide the fields in the example below for Retail Directions to create the customer. If you do not provide all required fields, an `Arkade\RetailDirections\Exceptions\ValidationException` will be thrown.
+
+If your provided customer ID already exists or your provided email address exists for another customer, an `Arkade\RetailDirections\Exceptions\AlreadyExistsException` will be thrown.
+
+Please consult your Retail Directions integration notes for information on which fields you will need to provide for your integration.
+
+```php
+use Arkade\RetailDirections\Customer;
+
+$customer = new Customer('1234', [
+    'firstName'        => 'Malcolm',
+    'lastName'         => 'Turnball',
+    'emailAddress'     => 'malcolm.turnball@gov.au',
+    'homeLocationCode' => '1004',
+    'origin'           => 'Google'
+]);
+
+$client->customers()->create($customer);
+```
+
+#### `update(Customer $customer)`
+
+Update attributes for customer with the given ID.
+
+To utilise this method, you first need to instantiate a `Arkade\RetailDirections\Customer` instance with your desired ID and attributes. Once instantiated, you pass this instance into the `update()` method.
+
+If your attributes do not pass validation at Retail Directions, an `Arkade\RetailDirections\Exceptions\ValidationException` will be thrown.
+
+If the provided customer ID does not exist, an `Arkade\RetailDirections\Exceptions\NotFoundException` will be thrown.
+
+Please consult your Retail Directions integration notes for information on which fields you will need to provide for your integration.
+
+```php
+use Arkade\RetailDirections\Customer;
+
+$customer = new Customer('1234', [
+    'lastName' => 'Trumbell'
+]);
+
+$client->customers()->update($customer);
+```
+
+#### `createOrUpdate(Customer $customer)`
+
+Create customer with given ID and attributes or update attributes if ID already exists.
+
+To utilise this method, you first need to instantiate a `Arkade\RetailDirections\Customer` instance with your desired ID and attributes. Once instantiated, you pass this instance into the `createOrUpdate()` method.
+
+If your attributes do not pass validation at Retail Directions, an `Arkade\RetailDirections\Exceptions\ValidationException` will be thrown.
+
+If your provided email address exists for another customer, an `Arkade\RetailDirections\Exceptions\AlreadyExistsException` will be thrown.
+
+Please consult your Retail Directions integration notes for information on which fields you will need to provide for your integration.
+
+```php
+use Arkade\RetailDirections\Customer;
+
+$customer = new Customer('1234', [
+    'firstName'        => 'Malcolm',
+    'lastName'         => 'Turnball',
+    'emailAddress'     => 'malcolm.turnball@gov.au',
+    'homeLocationCode' => '1004',
+    'origin'           => 'Google'
+]);
+
+$client->customers()->createOrUpdate($customer);
+```
+
+#### `createOrUpdateFromAttributes(array $attributes)`
+
+Create customer or update a customer form the provided attributes.
+
+The difference between this method and the previous three is that is accepts an arbitrary array of attributes. This allows one to create a Retail Directions customer without specifying an ID. In this scenario, Retail Directions will generate an ID for you.
+
+Once created, this method will return a fully populated `Arkade\RetailDirections\Customer` instance.
+
+If your attributes do not pass validation at Retail Directions, an `Arkade\RetailDirections\Exceptions\ValidationException` will be thrown.
+
+If your provided email address exists for another customer, an `Arkade\RetailDirections\Exceptions\AlreadyExistsException` will be thrown.
+
+Please consult your Retail Directions integration notes for information on which fields you will need to provide for your integration.
+
+```php
+$client->customers()->createOrUpdateFromAttributes([
+    'firstName'        => 'Malcolm',
+    'lastName'         => 'Turnball',
+    'emailAddress'     => 'malcolm.turnball@gov.au',
+    'homeLocationCode' => '1004',
+    'origin'           => 'Google'
+]);
+```
+
+## Recording history
+
+To debug your SDK requests and to assist in building integrations for new endpoints, you may use the history container. When provided an Illuminate collection, the SDK will record all requests and responses into the container.
+
+> If you are using the Laravel service provider, a history container will already be set for you
+>
+> You may access it using `$client->getHistoryContainer()` anywhere in your application
+
+```php
+use Arkade\RetailDirections;
+use Illuminate\Support\Collection;
+
+$history = new Collection;
+
+$client = (new RetailDirections\Client('http://59.154.22.13/RDWS/RDWS.asmx?WSDL'))
+    ->setHistoryContainer($history);
+    
+$client->doSomething();
+
+var_dump($history->first);
+
+[
+    'request'         => '...', // Full XML SOAP request
+    'requestHeaders'  => '...', // SOAP security headers
+    'serviceRequest'  => '...', // Internal RDWS XML service request
+    'response'        => '...', // Full XML SOAP response
+    'responseHeaders' => '...', // SOAP security headers
+    'serviceResult'   => '...'  // Internal RDWS XML service response
+]
+```
+
+If you have enabled history collection, any thrown exceptions will also contain the collection for easily debugging what went wrong.
+
+```php
+use Arkade\RetailDirections;
+use Illuminate\Support\Collection;
+
+$history = new Collection;
+
+$client = (new RetailDirections\Client('http://59.154.22.13/RDWS/RDWS.asmx?WSDL'))
+    ->setHistoryContainer($history);
+    
+try {
+    $client->doSomething();
+} catch (RetailDirections\Exceptions\ServiceException $e) {
+    var_dump($e->getHistoryContainer()); // Illuminate\Support\Collection
+}
 ```
 
 ## Contributing
