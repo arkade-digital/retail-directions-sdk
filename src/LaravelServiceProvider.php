@@ -2,6 +2,7 @@
 
 namespace Arkade\RetailDirections;
 
+use Illuminate\Support\Collection;
 use Illuminate\Support\ServiceProvider;
 
 class LaravelServiceProvider extends ServiceProvider
@@ -20,6 +21,8 @@ class LaravelServiceProvider extends ServiceProvider
             if ($credentials = $this->resolveCredentialsFromConfig()) {
                 $client->setCredentials($credentials);
             }
+
+            $client->setHistoryContainer(new Collection);
 
             return $client;
         });
