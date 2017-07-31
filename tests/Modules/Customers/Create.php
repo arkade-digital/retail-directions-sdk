@@ -107,7 +107,7 @@ trait Create
 
         $customer->pushIdentification(new RetailDirections\Identifications\Omneo('271DNTKT291290VD8H9WKO5QO0YR0000'));
 
-        $client->customers()->create($customer);
+        $customer = $client->customers()->create($customer);
 
         $this->assertCount(1, $customer->getIdentifications());
         $this->assertEquals('OMNEO', $customer->getIdentifications()->first()->getType());

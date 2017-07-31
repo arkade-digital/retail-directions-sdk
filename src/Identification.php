@@ -2,6 +2,8 @@
 
 namespace Arkade\RetailDirections;
 
+use Arkade\RetailDirections\Identifications;
+
 class Identification
 {
     /**
@@ -62,5 +64,20 @@ class Identification
             'customerIdentificationId' => $this->getType(),
             'customerReference' => $this->getValue()
         ];
+    }
+
+    /**
+     * Create entity from provided XML element.
+     *
+     * @param  \SimpleXMLElement $xml
+     * @return Identification
+     */
+    public static function fromXml(\SimpleXMLElement $xml)
+    {
+        if ('OMNEO' == $xml->customerIdentificationId) {
+            return new Identifications\Omneo($xml->customerReference);
+        }
+
+        return new static($xml->customerIdentificationId, $xml->customerReference);
     }
 }

@@ -41,13 +41,11 @@ class Customers extends AbstractModule
 
         }
 
-        $customer = Customer::fromXml($response->Customer);
-
-        foreach ($response->Addresses->Address as $address) {
-            $customer->getAddresses()->push(Address::fromXml($address));
-        }
-
-        return $customer;
+        return Customer::fromXml(
+            $response->Customer,
+            $response->CustomerIdentifications,
+            $response->Addresses
+        );
     }
 
     /**
@@ -174,6 +172,10 @@ class Customers extends AbstractModule
 
         }
 
-        return Customer::fromXml($response->Customer);
+        return Customer::fromXml(
+            $response->Customer,
+            $response->CustomerIdentifications,
+            $response->Addresses
+        );
     }
 }

@@ -111,16 +111,33 @@ class Customer extends Fluent
      * Create entity from provided XML element.
      *
      * @param  \SimpleXMLElement $xml
+     * @param  \SimpleXMLElement $identificationsXml
+     * @param  \SimpleXMLElement $addressesXml
      * @return Customer
      */
-    public static function fromXml(\SimpleXMLElement $xml)
-    {
+    public static function fromXml(
+        \SimpleXMLElement $xml,
+        \SimpleXMLElement $identificationsXml = null,
+        \SimpleXMLElement $addressesXml = null
+    ) {
         $customer = new static;
 
         $customer->setId((string) $xml->customerId);
 
         foreach ($xml->children() as $key => $value) {
             $customer->{$key} = (string) $value;
+        }
+
+        if ($identificationsXml) {
+            foreach ($identificationsXml->CustomerIdentification as $identification) {
+                $customer->pushIdentification(Identification::fromXml($identification));
+            }
+        }
+
+        if ($addressesXml) {
+            foreach ($addressesXml->Address as $address) {
+                $customer->getAddresses()->push(Address::fromXml($address));
+            }
         }
 
         return $customer;
