@@ -62,48 +62,56 @@ trait Create
 
     public function testCreateWithIdentificationsSendsCorrectRequest()
     {
-//        $soapClient = $this->mockSoapClient();
+        $soapClient = $this->mockSoapClient();
 
-        $history = new \Illuminate\Support\Collection;
+        $this->expectSOAP(
+            $soapClient,
+            'Customers/CreateWithIdentificationsRequest',
+            'Customers/CreateWithIdentificationsSuccessResponse'
+        );
 
-//        $this->expectSOAP(
-//            $soapClient,
-//            'Customers/CustomerCreateWithIdentificationsRequest',
-//            'Customers/CustomerCreateSuccessResponse'
-//        );
-
-        $client = (new RetailDirections\Client($this->sandboxWSDL()))
-            ->setHistoryContainer($history);
+        $client = (new RetailDirections\Client($this->mockWSDL()))->setClient($soapClient);
 
         $customer = new RetailDirections\Customer([
-            'firstName'        => 'Dan',
-            'lastName'         => 'Greaves',
-            'emailAddress'     => 'dan@arkade.com.au',
+            'firstName'        => 'Malcolm',
+            'lastName'         => 'Turnball',
+            'emailAddress'     => 'malcolm.turnball@gov.au',
             'homeLocationCode' => '1004',
             'origin'           => 'Google'
         ]);
 
-        $customer->pushIdentification(new RetailDirections\Identifications\Omneo('abc123'));
+        $customer->pushIdentification(new RetailDirections\Identifications\Omneo('271DNTKT291290VD8H9WKO5QO0YR0000'));
 
-//        var_dump($customer); die;
+        $client->customers()->create($customer);
+    }
 
-        try {
-            $client->customers()->create($customer);
-        } catch (\Exception $e) {
-//            var_dump($e->getHistoryContainer()); die;
-        }
+    public function testCreateWithIdentificationsReturnsPopulatedCustomerEntity()
+    {
+        $soapClient = $this->mockSoapClient();
 
-        file_put_contents(
-            __DIR__.'/../../Stubs/Customers/CreateWithIdentificationsRequest.xml',
-            $history->first()->request
+        $this->expectSOAP(
+            $soapClient,
+            'Customers/CreateWithIdentificationsRequest',
+            'Customers/CreateWithIdentificationsSuccessResponse'
         );
 
-        file_put_contents(
-            __DIR__.'/../../Stubs/Customers/CreateWithIdentificationsSuccessResponse.xml',
-            $history->first()->response
-        );
+        $client = (new RetailDirections\Client($this->mockWSDL()))->setClient($soapClient);
 
-        var_dump($history); die;
+        $customer = new RetailDirections\Customer([
+            'firstName'        => 'Malcolm',
+            'lastName'         => 'Turnball',
+            'emailAddress'     => 'malcolm.turnball@gov.au',
+            'homeLocationCode' => '1004',
+            'origin'           => 'Google'
+        ]);
+
+        $customer->pushIdentification(new RetailDirections\Identifications\Omneo('271DNTKT291290VD8H9WKO5QO0YR0000'));
+
+        $client->customers()->create($customer);
+
+        $this->assertCount(1, $customer->getIdentifications());
+        $this->assertEquals('OMNEO', $customer->getIdentifications()->first()->getType());
+        $this->assertEquals('271DNTKT291290VD8H9WKO5QO0YR0000', $customer->getIdentifications()->first()->getValue());
     }
 
     /**
