@@ -8,7 +8,7 @@ use Illuminate\Support\Collection;
 
 class CustomersTest extends RetailDirections\TestCase
 {
-    use Customers\Create;
+    use Customers\CreateTrait;
 
     public function testFindByIdSendsCorrectRequest()
     {
@@ -172,31 +172,80 @@ class CustomersTest extends RetailDirections\TestCase
         $this->assertEquals('Turnball', $customers->first()->lastName);
     }
 
-//    public function testUpdateSuccess()
-//    {
-//        $history = new Collection;
-//
-//        $client = (new RetailDirections\Client($this->sandboxWSDL()))
-//            ->setHistoryContainer($history);
-//
-//        try {
-//            $client->customers()->create([
-//                'customerId'       => '100400000004',
-//                'firstName'        => 'Dan',
-//                'lastName'         => 'Greaves',
-//                'emailAddress'     => 'dan+test2@arkade.com.au',
-//                'homeLocationCode' => '1004',
-//                'origin'           => 'Google'
-//            ]);
-//        } catch (\Exception $e) {
-//            //
-//        }
-//
-////        file_put_contents(
-////            __DIR__.'/../Stubs/Customers/CustomerCreateFailedExistsResponse.xml',
-////            $history->first()->serviceResult
-////        );
-//
-//        var_dump($history->first()->serviceResult); die;
-//    }
+    public function testFindByIdentificationSendsCorrectRequest()
+    {
+        $soapClient = $this->mockSoapClient();
+
+        $this->expectSOAP(
+            $soapClient,
+            'Customers/FindByIdentificationRequest',
+            'Customers/FindByIdentificationSuccessResponse'
+        );
+
+        $this->expectSOAP(
+            $soapClient,
+            'Customers/CustomerGetRequest',
+            'Customers/CustomerGetSuccessResponse'
+        );
+
+        $client = (new RetailDirections\Client($this->mockWSDL()))->setClient($soapClient);
+
+        $client->customers()->findByIdentification(
+            new RetailDirections\Identifications\Omneo('271DNTKT291290VD8H9WKO5QO0YR0000'),
+            Carbon::parse('2017-07-25T06:45:55.448605+00:00')
+        );
+    }
+
+    /**
+     * @expectedException \Arkade\RetailDirections\Exceptions\NotFoundException
+     */
+    public function testFindByIdentificationThrowsNotFoundExceptionForMissingId()
+    {
+        $soapClient = $this->mockSoapClient();
+
+        $this->expectSOAP(
+            $soapClient,
+            'Customers/FindByIdentificationRequest',
+            'Customers/FindByIdentificationFailedResponse'
+        );
+
+        $client = (new RetailDirections\Client($this->mockWSDL()))->setClient($soapClient);
+
+        $client->customers()->findByIdentification(
+            new RetailDirections\Identifications\Omneo('271DNTKT291290VD8H9WKO5QO0YR0000'),
+            Carbon::parse('2017-07-25T06:45:55.448605+00:00')
+        );
+    }
+
+    public function testFindByIdentificationReturnsCollectionOfPopulatedCustomerEntity()
+    {
+        $soapClient = $this->mockSoapClient();
+
+        $this->expectSOAP(
+            $soapClient,
+            'Customers/FindByIdentificationRequest',
+            'Customers/FindByIdentificationSuccessResponse'
+        );
+
+        $this->expectSOAP(
+            $soapClient,
+            'Customers/CustomerGetRequest',
+            'Customers/CustomerGetSuccessResponse'
+        );
+
+        $client = (new RetailDirections\Client($this->mockWSDL()))->setClient($soapClient);
+
+        $customers = $client->customers()->findByIdentification(
+            new RetailDirections\Identifications\Omneo('271DNTKT291290VD8H9WKO5QO0YR0000'),
+            Carbon::parse('2017-07-25T06:45:55.448605+00:00')
+        );
+
+        $this->assertInstanceOf(Collection::class, $customers);
+
+        $this->assertInstanceOf(RetailDirections\Customer::class, $customers->first());
+        $this->assertEquals('100400000001', $customers->first()->getId());
+        $this->assertEquals('MR MALCOLM', $customers->first()->firstName);
+        $this->assertEquals('TURNBALL', $customers->first()->lastName);
+        $this->assertEquals('12345678', $customers->first()->mobileNumber);
+    }
 }

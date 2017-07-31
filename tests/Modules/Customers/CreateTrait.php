@@ -5,7 +5,7 @@ namespace Arkade\RetailDirections\Modules\Customers;
 use Carbon\Carbon;
 use Arkade\RetailDirections;
 
-trait Create
+trait CreateTrait
 {
     public function testCreateSendsCorrectRequest()
     {

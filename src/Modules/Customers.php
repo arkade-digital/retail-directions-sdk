@@ -83,6 +83,43 @@ class Customers extends AbstractModule
             $collection->push(Customer::fromXml($customer));
         }
 
+        if ($collection->isEmpty()) {
+            throw (new Exceptions\NotFoundException)
+                ->setHistoryContainer($this->client->getHistoryContainer());
+        }
+
+        return $collection;
+    }
+
+    /**
+     * Return collection of customers for a provided identification.
+     *
+     * @param  Identification $identification
+     * @param  Carbon|null    $datetime
+     * @return Collection
+     * @throws Exceptions\NotFoundException
+     * @throws Exceptions\ServiceException
+     */
+    public function findByIdentification(Identification $identification, Carbon $datetime = null)
+    {
+        $response = $this->client->call('CustIdentByCustomerRefFind', [
+            'CustIdentByCustomerRefFind' => [
+                'customerReference' => $identification->getValue(),
+                'identificationTypeCode' => $identification->getType(),
+            ]
+        ]);
+
+        $collection = new Collection;
+
+        foreach ($response->CustomerIdentifications->CustomerIdentification as $customerIdentification) {
+            $collection->push($this->findById($customerIdentification->customerId, $datetime));
+        }
+
+        if ($collection->isEmpty()) {
+            throw (new Exceptions\NotFoundException)
+                ->setHistoryContainer($this->client->getHistoryContainer());
+        }
+
         return $collection;
     }
 
