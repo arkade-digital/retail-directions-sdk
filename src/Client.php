@@ -239,13 +239,23 @@ EOT;
      */
     protected function arrayToXml(array $data, \SimpleXMLElement &$element)
     {
-        foreach ($data as $key => $value) {
+        foreach ($data as $key => $value)
+        {
             if (is_array($value)) {
+
+                if (! empty($value['@node'])) {
+                    $key = $value['@node'];
+                    unset($value['@node']);
+                }
+
                 $child = $element->addChild($key);
                 $this->arrayToXml($value, $child);
-            } else {
-                $element->addChild($key, htmlspecialchars($value));
+
+                continue;
+
             }
+
+            $element->addChild($key, htmlspecialchars($value));
         }
     }
 

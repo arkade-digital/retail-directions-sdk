@@ -113,6 +113,16 @@ If the provided ID is invalid, this method will throw `Arkade\RetailDirections\E
 $client->customers()->findById('123456');
 ```
 
+#### `findByIdentification(Identification $identification)`
+
+When provided a valid `Arkade\RetailDirections\Identification` instance, this method will return an `Arkade\RetailDirections\Customer` instance containing all the attributes that Retail Directions holds for this customer.
+
+If the provided identification is invalid, this method will throw `Arkade\RetailDirections\Exceptions\NotFoundException` which you should handle in your application.
+
+```php
+$client->customers()->findByIdentificiation(new Identifications\OmneoMemberId('abc123'));
+```
+
 #### `findByEmail($email)`
 
 When provided a valid email address, this method will return a `Illuminate\Support\Collection` instance containing `Arkade\RetailDirections\Customer` instances that have the provided email address.
@@ -125,13 +135,17 @@ $client->customers()->findByEmail('foo@example.com');
 
 #### `create(Customer $customer)`
 
-Create a Retail Directions customer with a pre-defined ID.
+Create a Retail Directions customer.
 
-To utilise this method, you first need to instantiate a `Arkade\RetailDirections\Customer` instance with your desired ID and attributes. Once instantiated, you pass this instance into the `create()` method.
+To utilise this method, you first need to instantiate a `Arkade\RetailDirections\Customer` instance with your desired attributes. Once instantiated, you pass this instance into the `create()` method.
+
+If you set a Retail Directions customer ID using `$customer->setId('foo')`, the customer will be created with the provided ID. If you do not set an ID, Retail Directions will generate one for you.
+
+You can also set relevant identifications on the user before passing into the create method. You should use `$customer->addIdentification()` before passing into the `create()` method.
 
 At the minimum, you must provide the fields in the example below for Retail Directions to create the customer. If you do not provide all required fields, an `Arkade\RetailDirections\Exceptions\ValidationException` will be thrown.
 
-If your provided customer ID already exists or your provided email address exists for another customer, an `Arkade\RetailDirections\Exceptions\AlreadyExistsException` will be thrown.
+If your provided customer ID, identification or email address already exists for another customer, an `Arkade\RetailDirections\Exceptions\AlreadyExistsException` will be thrown.
 
 Please consult your Retail Directions integration notes for information on which fields you will need to provide for your integration.
 
@@ -164,61 +178,11 @@ Please consult your Retail Directions integration notes for information on which
 ```php
 use Arkade\RetailDirections\Customer;
 
-$customer = new Customer('1234', [
+$customer = (new Customer([
     'lastName' => 'Trumbell'
-]);
+]))->setId('1234');
 
 $client->customers()->update($customer);
-```
-
-#### `createOrUpdate(Customer $customer)`
-
-Create customer with given ID and attributes or update attributes if ID already exists.
-
-To utilise this method, you first need to instantiate a `Arkade\RetailDirections\Customer` instance with your desired ID and attributes. Once instantiated, you pass this instance into the `createOrUpdate()` method.
-
-If your attributes do not pass validation at Retail Directions, an `Arkade\RetailDirections\Exceptions\ValidationException` will be thrown.
-
-If your provided email address exists for another customer, an `Arkade\RetailDirections\Exceptions\AlreadyExistsException` will be thrown.
-
-Please consult your Retail Directions integration notes for information on which fields you will need to provide for your integration.
-
-```php
-use Arkade\RetailDirections\Customer;
-
-$customer = new Customer('1234', [
-    'firstName'        => 'Malcolm',
-    'lastName'         => 'Turnball',
-    'emailAddress'     => 'malcolm.turnball@gov.au',
-    'homeLocationCode' => '1004',
-    'origin'           => 'Google'
-]);
-
-$client->customers()->createOrUpdate($customer);
-```
-
-#### `createOrUpdateFromAttributes(array $attributes)`
-
-Create customer or update a customer form the provided attributes.
-
-The difference between this method and the previous three is that is accepts an arbitrary array of attributes. This allows one to create a Retail Directions customer without specifying an ID. In this scenario, Retail Directions will generate an ID for you.
-
-Once created, this method will return a fully populated `Arkade\RetailDirections\Customer` instance.
-
-If your attributes do not pass validation at Retail Directions, an `Arkade\RetailDirections\Exceptions\ValidationException` will be thrown.
-
-If your provided email address exists for another customer, an `Arkade\RetailDirections\Exceptions\AlreadyExistsException` will be thrown.
-
-Please consult your Retail Directions integration notes for information on which fields you will need to provide for your integration.
-
-```php
-$client->customers()->createOrUpdateFromAttributes([
-    'firstName'        => 'Malcolm',
-    'lastName'         => 'Turnball',
-    'emailAddress'     => 'malcolm.turnball@gov.au',
-    'homeLocationCode' => '1004',
-    'origin'           => 'Google'
-]);
 ```
 
 ## Recording history

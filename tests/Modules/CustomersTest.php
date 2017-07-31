@@ -8,9 +8,7 @@ use Illuminate\Support\Collection;
 
 class CustomersTest extends RetailDirections\TestCase
 {
-    use Customers\Create,
-        Customers\CreateOrUpdate,
-        Customers\CreateOrUpdateFromAttributes;
+    use Customers\Create;
 
     public function testFindByIdSendsCorrectRequest()
     {

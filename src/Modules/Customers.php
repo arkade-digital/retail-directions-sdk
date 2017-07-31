@@ -3,10 +3,12 @@
 namespace Arkade\RetailDirections\Modules;
 
 use Carbon\Carbon;
+use DomainException;
 use Illuminate\Support\Collection;
 use Arkade\RetailDirections\Address;
 use Arkade\RetailDirections\Customer;
 use Arkade\RetailDirections\Exceptions;
+use Arkade\RetailDirections\Identification;
 
 class Customers extends AbstractModule
 {
@@ -98,14 +100,15 @@ class Customers extends AbstractModule
      */
     public function create(Customer $customer, Carbon $datetime = null)
     {
-        // Throw AlreadyExistsException if customer already exists
-        try {
-            if ($this->findById($customer->getId(), $datetime)) {
-                throw new Exceptions\AlreadyExistsException;
-            }
-        } catch (Exceptions\NotFoundException $e) {}
+        if ($customer->getId()) {
+            try {
+                if ($this->findById($customer->getId(), $datetime)) {
+                    throw new Exceptions\AlreadyExistsException;
+                }
+            } catch (Exceptions\NotFoundException $e) { }
+        }
 
-        return $this->createOrUpdate($customer);
+        return $this->persist($customer);
     }
 
     /**
@@ -121,14 +124,17 @@ class Customers extends AbstractModule
      */
     public function update(Customer $customer, Carbon $datetime = null)
     {
-        // Throw NotFoundException if customer does not exist
+        if (! $customer->getId()) {
+            throw new DomainException('You must provide an ID when updating a customer. Try using findByIdentification() or findByEmail() first.');
+        }
+
         $this->findById($customer->getId(), $datetime);
 
-        return $this->createOrUpdate($customer);
+        return $this->persist($customer);
     }
 
     /**
-     * Create or update the provided customer.
+     * Create or update the provided customer entity.
      *
      * @param  Customer $customer
      * @return Customer
@@ -136,31 +142,22 @@ class Customers extends AbstractModule
      * @throws Exceptions\ValidationException
      * @throws Exceptions\ServiceException
      */
-    public function createOrUpdate(Customer $customer)
+    protected function persist(Customer $customer)
     {
-        return $this->createOrUpdateFromAttributes(array_merge(
-            $customer->getAttributes(),
-            ['customerId' => $customer->getId()]
-        ));
-    }
+        $payload = ['Customer' => $customer->getAttributes()];
 
-    /**
-     * Create or update a customer from provided attributes.
-     *
-     * If the `customerId` attribute is provided, this will cause an update.
-     *
-     * @param  array $attributes
-     * @return Customer
-     * @throws Exceptions\AlreadyExistsException
-     * @throws Exceptions\ValidationException
-     * @throws Exceptions\ServiceException
-     */
-    public function createOrUpdateFromAttributes(array $attributes)
-    {
+        if ($customer->getId()) {
+            $payload['Customer']['customerId'] = $customer->getId();
+        }
+
+        if (! $customer->exists() && $customer->getIdentifications()->count()) {
+            $payload['CustomerIdentifications'] = $customer->getIdentifications()->map(function(Identification $identification) {
+                return $identification->getXmlArray();
+            })->toArray();
+        }
+
         try {
-            $response = $this->client->call('CustomerEdit', [
-                'Customer' => $attributes
-            ]);
+            $response = $this->client->call('CustomerEdit', $payload);
         } catch (Exceptions\ServiceException $e) {
 
             if (58104 == $e->getCode()) {
