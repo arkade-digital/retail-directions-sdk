@@ -61,7 +61,7 @@ class Identification
     {
         return [
             '@node' => 'CustomerIdentification',
-            'customerIdentificationId' => $this->getType(),
+            'identificationTypeCode' => $this->getType(),
             'customerReference' => $this->getValue()
         ];
     }
@@ -74,10 +74,10 @@ class Identification
      */
     public static function fromXml(\SimpleXMLElement $xml)
     {
-        if ('OMNEO' == $xml->customerIdentificationId) {
+        if ('OMNEOIDENT' == $xml->identificationTypeCode) {
             return new Identifications\Omneo($xml->customerReference);
         }
 
-        return new static($xml->customerIdentificationId, $xml->customerReference);
+        return new static($xml->identificationTypeCode, $xml->customerReference);
     }
 }

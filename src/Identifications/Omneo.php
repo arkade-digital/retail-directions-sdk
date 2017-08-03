@@ -13,6 +13,6 @@ class Omneo extends Identification
      */
     public function __construct($value)
     {
-        parent::__construct('OMNEO', $value);
+        parent::__construct('OMNEOIDENT', $value);
     }
 }
