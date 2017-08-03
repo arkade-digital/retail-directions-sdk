@@ -4,6 +4,7 @@ namespace Arkade\RetailDirections\Modules\Customers;
 
 use Carbon\Carbon;
 use Arkade\RetailDirections;
+use Illuminate\Support\Collection;
 
 trait CreateTrait
 {
@@ -110,7 +111,8 @@ trait CreateTrait
         $customer = $client->customers()->create($customer);
 
         $this->assertCount(1, $customer->getIdentifications());
-        $this->assertEquals('OMNEO', $customer->getIdentifications()->first()->getType());
+        $this->assertInstanceOf(RetailDirections\Identifications\Omneo::class, $customer->getIdentifications()->first());
+        $this->assertEquals('OMNEOIDENT', $customer->getIdentifications()->first()->getType());
         $this->assertEquals('271DNTKT291290VD8H9WKO5QO0YR0000', $customer->getIdentifications()->first()->getValue());
     }
 
