@@ -3,6 +3,7 @@
 namespace Arkade\RetailDirections\Identifications;
 
 use Ramsey\Uuid\Uuid;
+use SKleeschulte\Base32;
 
 class OmneoGenerator
 {
@@ -14,10 +15,13 @@ class OmneoGenerator
     public function generate()
     {
         return new Omneo(
-            strtoupper(str_pad(implode('', [
+            strtoupper(implode('', [
                 '271',
-                (string) Uuid::uuid4()->getInteger()->convertToBase(36),
-            ]), 32, '0', STR_PAD_RIGHT))
+                str_pad(
+                    (string) Base32::encodeIntStrToCrockford((string) Uuid::uuid4()->getInteger()),
+                    29, '0', STR_PAD_LEFT
+                )
+            ]))
         );
     }
 }
