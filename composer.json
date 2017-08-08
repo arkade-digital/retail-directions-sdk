@@ -19,7 +19,8 @@
         "zendframework/zend-soap": "^2.6",
         "ramsey/uuid": "^3.6",
         "moontoast/math": "^1.1",
-        "skleeschulte/base32": "^0.0.2"
+        "skleeschulte/base32": "^0.0.2",
+        "zendframework/zend-diactoros": "^1.4"
     },
     "require-dev": {
         "phpunit/phpunit": "^6.1",

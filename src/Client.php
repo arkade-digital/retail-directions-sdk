@@ -2,10 +2,14 @@
 
 namespace Arkade\RetailDirections;
 
+use Exception;
 use Zend\Soap;
 use Carbon\Carbon;
+use Zend\Diactoros;
+use UnexpectedValueException;
 use Illuminate\Support\Fluent;
-use Illuminate\Support\Collection;
+use Psr\Http\Message\RequestInterface;
+use Psr\Http\Message\ResponseInterface;
 
 class Client
 {
@@ -31,9 +35,9 @@ class Client
     protected $credentials;
 
     /**
-     * History container for testing.
+     * History container.
      *
-     * @var Collection|null
+     * @var HistoryContainer|null
      */
     protected $historyContainer;
 
@@ -84,9 +88,9 @@ class Client
     }
 
     /**
-     * Return history container for testing.
+     * Return history container.
      *
-     * @return Collection|null
+     * @return HistoryContainer|null
      */
     public function getHistoryContainer()
     {
@@ -94,12 +98,12 @@ class Client
     }
 
     /**
-     * Set history container for testing.
+     * Set history container.
      *
-     * @param  Collection|null $historyContainer
+     * @param  HistoryContainer|null $historyContainer
      * @return Client
      */
-    public function setHistoryContainer(Collection $historyContainer)
+    public function setHistoryContainer(HistoryContainer $historyContainer = null)
     {
         $this->historyContainer = $historyContainer;
 
@@ -138,12 +142,12 @@ class Client
                     'request' => $request
                 ]
             ]);
-        } finally {
-            $this->persistHistory(
-                $request,
-                isset($response) ? $response->RDServiceResult : null
-            );
+        } catch (\Exception $e) {
+            $this->persistHistory($request, null, $e);
+            throw $e;
         }
+
+        $this->persistHistory($request, $response->RDServiceResult);
 
         $response = $this->parseResponseXml($response->RDServiceResult);
 
@@ -273,21 +277,60 @@ EOT;
     /**
      * Persist last request into history container.
      *
-     * @param  string $serviceRequest XML string from SOAP service request
-     * @param  string $serviceResult  XML string from SOAP service result
+     * @param  string         $serviceRequest XML string from SOAP service request
+     * @param  string|null    $serviceResult  XML string from SOAP service result
+     * @param  Exception|null $exception
      * @return void
      */
-    protected function persistHistory($serviceRequest, $serviceResult = null)
+    protected function persistHistory($serviceRequest, $serviceResult = null, Exception $exception = null)
     {
         if (! $this->historyContainer) return;
 
-        $this->historyContainer->push(new Fluent([
-            'request'         => html_entity_decode($this->client->getLastRequest()),
+        $this->historyContainer->record(new Fluent([
+            'request'         => $this->buildLastRequest(),
             'requestHeaders'  => html_entity_decode($this->client->getLastRequestHeaders()),
+            'requestBody'     => html_entity_decode($this->client->getLastRequest()),
             'serviceRequest'  => html_entity_decode($serviceRequest),
-            'response'        => html_entity_decode($this->client->getLastResponse()),
+            'response'        => $this->buildLastResponse(),
             'responseHeaders' => html_entity_decode($this->client->getLastResponseHeaders()),
-            'serviceResult'   => substr($serviceResult, 3) // Trim weird characters from beginning
+            'responseBody'    => html_entity_decode($this->client->getLastResponse()),
+            'serviceResult'   => $serviceResult ? substr($serviceResult, 3) : null, // Trim weird characters from beginning
+            'exception'       => $exception
         ]));
+    }
+
+    /**
+     * Build PSR-7 compatible instance for last request.
+     *
+     * @return RequestInterface|null
+     */
+    protected function buildLastRequest()
+    {
+        try {
+            return Diactoros\Request\Serializer::fromString(implode('', [
+                html_entity_decode($this->client->getLastRequestHeaders()),
+                html_entity_decode($this->client->getLastRequest())
+            ]));
+        } catch (UnexpectedValueException $e) {
+            return null;
+        }
+    }
+
+    /**
+     * Build PSR-7 compatible instance for last response.
+     *
+     * @return ResponseInterface|null
+     */
+    protected function buildLastResponse()
+    {
+        try {
+            return Diactoros\Response\Serializer::fromString(implode('', [
+                html_entity_decode($this->client->getLastResponseHeaders()),
+                "\r\n",
+                html_entity_decode($this->client->getLastResponse())
+            ]));
+        } catch (UnexpectedValueException $e) {
+            return null;
+        }
     }
 }

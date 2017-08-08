@@ -45,7 +45,7 @@ class ClientTest extends TestCase
 
     public function testSOAPRequestCorrectlyFormatted()
     {
-        $history = new Collection;
+        $history = new HistoryContainer;
 
         $client = (new Client($this->mockWSDL()))
             ->setCredentials(new Credentials('abc123', 'secret'))
@@ -62,7 +62,7 @@ class ClientTest extends TestCase
 
         $this->assertEquals(
             file_get_contents(__DIR__.'/Stubs/FullRequestEnvelope.xml'),
-            $history->first()->request
+            $history->first()->requestBody
         );
     }
 }
