@@ -2,8 +2,6 @@
 
 namespace Arkade\RetailDirections;
 
-use Omneo\Plugins;
-use Psr\Log\LoggerInterface;
 use Illuminate\Support\Fluent;
 use Illuminate\Support\ServiceProvider;
 
@@ -59,18 +57,18 @@ class LaravelServiceProvider extends ServiceProvider
      */
     protected function setupRecorder(HistoryContainer $historyContainer)
     {
-        if (! $this->app->bound(Plugins\HttpRecorder\Recorder::class)) {
+        if (! $this->app->bound('Omneo\Plugins\HttpRecorder\Recorder')) {
             return $historyContainer;
         }
 
-        $recorder = $this->app->make(Plugins\HttpRecorder\Recorder::class);
+        $recorder = $this->app->make('Omneo\Plugins\HttpRecorder\Recorder');
 
         $historyContainer->push(function (Fluent $transaction) use ($recorder)
         {
             // Request could not be processed, we can't record this
             if (! $transaction->request)
             {
-                $this->app->make(LoggerInterface::class)->error(
+                $this->app->make('Psr\Log\LoggerInterface')->error(
                     'Could not process Retail Directions request for recorder',
                     ['headers' => $transaction->requestHeaders, 'body' => $transaction->requestBody]
                 );
