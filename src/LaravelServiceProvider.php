@@ -2,7 +2,9 @@
 
 namespace Arkade\RetailDirections;
 
-use Illuminate\Support\Collection;
+use Omneo\Plugins;
+use Psr\Log\LoggerInterface;
+use Illuminate\Support\Fluent;
 use Illuminate\Support\ServiceProvider;
 
 class LaravelServiceProvider extends ServiceProvider
@@ -22,7 +24,11 @@ class LaravelServiceProvider extends ServiceProvider
                 $client->setCredentials($credentials);
             }
 
-            $client->setHistoryContainer(new Collection);
+            $historyContainer = new HistoryContainer;
+
+            $this->setupRecorder($historyContainer);
+
+            $client->setHistoryContainer($historyContainer);
 
             return $client;
         });
@@ -43,5 +49,43 @@ class LaravelServiceProvider extends ServiceProvider
         }
 
         return null;
+    }
+
+    /**
+     * Setup recorder middleware if the HttpRecorder plugin is bound.
+     *
+     * @param  HistoryContainer $historyContainer
+     * @return HistoryContainer
+     */
+    protected function setupRecorder(HistoryContainer $historyContainer)
+    {
+        if (! $this->app->bound(Plugins\HttpRecorder\Recorder::class)) {
+            return $historyContainer;
+        }
+
+        $recorder = $this->app->make(Plugins\HttpRecorder\Recorder::class);
+
+        $historyContainer->push(function (Fluent $transaction) use ($recorder)
+        {
+            // Request could not be processed, we can't record this
+            if (! $transaction->request)
+            {
+                $this->app->make(LoggerInterface::class)->error(
+                    'Could not process Retail Directions request for recorder',
+                    ['headers' => $transaction->requestHeaders, 'body' => $transaction->requestBody]
+                );
+
+                return;
+            }
+
+            $recorder->record(
+                $transaction->request,
+                $transaction->response,
+                $transaction->exception,
+                ['retail-directions', 'outgoing']
+            );
+        });
+
+        return $historyContainer;
     }
 }
