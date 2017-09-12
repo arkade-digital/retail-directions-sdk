@@ -22,6 +22,10 @@ class LaravelServiceProvider extends ServiceProvider
                 $client->setCredentials($credentials);
             }
 
+            if (config('services.retaildirections.location')) {
+                $client->setLocation(new Location(config('services.retaildirections.location')));
+            }
+
             $historyContainer = new HistoryContainer;
 
             $this->setupRecorder($historyContainer);
