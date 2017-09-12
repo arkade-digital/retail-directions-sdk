@@ -11,10 +11,7 @@ class ClientTest extends TestCase
     {
         $client = new Client($this->mockWSDL());
 
-        $client->setCredentials(new Credentials(
-                'abc123',
-                'secret')
-        );
+        $client->setCredentials(new Credentials('abc123', 'secret'));
 
         $this->assertInstanceOf(
             Credentials::class,
