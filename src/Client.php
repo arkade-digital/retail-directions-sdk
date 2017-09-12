@@ -42,6 +42,12 @@ class Client
     protected $historyContainer;
 
     /**
+     * Location.
+     * @var Location
+     */
+    protected $location;
+
+    /**
      * Client constructor.
      *
      * @param string $wsdl URL or path to WSDL file
@@ -121,6 +127,54 @@ class Client
     }
 
     /**
+     * Set the location.
+     *
+     * @param Location $location
+     * @return Client
+     */
+    public function setLocation(Location $location)
+    {
+        $this->location = $location;
+
+        return $this;
+    }
+
+    /**
+     * Add location attributes to an array.
+     *
+     * @param array $attributes
+     * @return array
+     */
+    protected function withLocationAttributes(array $attributes)
+    {
+        return array_map(function ($value) {
+            if ($this->location) return array_merge($value, $this->location->toArray());
+            return $value;
+        }, $attributes);
+    }
+
+    /**
+     * Get the location.
+     *
+     * @return Location
+     */
+    public function getLocation()
+    {
+        return $this->location;
+    }
+
+    /**
+     * Build the request attributes.
+     *
+     * @param array $attributes
+     * @return array
+     */
+    protected function buildRequestAttributes(array $attributes)
+    {
+        return $this->withLocationAttributes($attributes);
+    }
+
+    /**
      * Call the SOAP service and return XML result.
      *
      * @param  string $serviceName
@@ -134,7 +188,10 @@ class Client
             $this->buildSecurityTokenHeader($serviceName)
         );
 
-        $request = $this->buildRequestXml($serviceName, $attributes);
+        $request = $this->buildRequestXml(
+            $serviceName,
+            $this->buildRequestAttributes($attributes)
+        );
 
         try {
             $response = $this->client->call('RDService', [

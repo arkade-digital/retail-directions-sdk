@@ -12,13 +12,25 @@ class ClientTest extends TestCase
         $client = new Client($this->mockWSDL());
 
         $client->setCredentials(new Credentials(
-            'abc123',
-            'secret')
+                'abc123',
+                'secret')
         );
 
         $this->assertInstanceOf(
             Credentials::class,
             $client->getCredentials()
+        );
+    }
+
+    public function testSetLocation()
+    {
+        $client = new Client($this->mockWSDL());
+
+        $client->setLocation(new Location('123'));
+
+        $this->assertInstanceOf(
+            Location::class,
+            $client->getLocation()
         );
     }
 
