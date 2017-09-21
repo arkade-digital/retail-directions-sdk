@@ -127,6 +127,16 @@ class Client
     }
 
     /**
+     * Return loyalty customers module.
+     *
+     * @return Modules\LoyaltyCustomers
+     */
+    public function loyaltyCustomers()
+    {
+        return new Modules\LoyaltyCustomers($this);
+    }
+
+    /**
      * Set the location.
      *
      * @param Location $location
