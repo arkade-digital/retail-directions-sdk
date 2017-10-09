@@ -247,7 +247,9 @@ class Client
      */
     protected function buildClient($wsdl)
     {
-        return $this->client = new Soap\Client($wsdl);
+        return $this->client = new Soap\Client($wsdl, [
+            'user_agent' => 'PHPSoapClient'
+        ]);
     }
 
     /**
