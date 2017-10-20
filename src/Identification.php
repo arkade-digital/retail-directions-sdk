@@ -75,9 +75,9 @@ class Identification
     public static function fromXml(\SimpleXMLElement $xml)
     {
         if ('OMNEOIDENT' == $xml->identificationTypeCode) {
-            return new Identifications\Omneo($xml->customerReference);
+            return new Identifications\Omneo((string) $xml->customerReference);
         }
 
-        return new static($xml->identificationTypeCode, $xml->customerReference);
+        return new static((string) $xml->identificationTypeCode, (string) $xml->customerReference);
     }
 }
