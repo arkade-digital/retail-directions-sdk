@@ -1,0 +1,1 @@
+<BulkItemRangeGetRequest xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:xsd="http://www.w3.org/2001/XMLSchema" xmlns="http://www.retaildirections.com/"><BulkItemRangeGet><storeCode>1112</storeCode><fromDate>2018-08-06T00:49:14.546117+00:00</fromDate><homeLocationCode/><locationCode/></BulkItemRangeGet></BulkItemRangeGetRequest>

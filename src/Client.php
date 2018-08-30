@@ -3,6 +3,7 @@
 namespace Arkade\RetailDirections;
 
 use Exception;
+use Illuminate\Support\Facades\Storage;
 use Zend\Soap;
 use Carbon\Carbon;
 use Zend\Diactoros;
@@ -127,6 +128,16 @@ class Client
     }
 
     /**
+     * Return items module.
+     *
+     * @return Modules\Items
+     */
+    public function items()
+    {
+        return new Modules\Items($this);
+    }
+
+    /**
      * Return loyalty customers module.
      *
      * @return Modules\LoyaltyCustomers
@@ -134,6 +145,16 @@ class Client
     public function loyaltyCustomers()
     {
         return new Modules\LoyaltyCustomers($this);
+    }
+
+    /**
+     * Return stores module.
+     *
+     * @return Modules\Stores
+     */
+    public function stores()
+    {
+        return new Modules\Stores($this);
     }
 
     /**
@@ -202,6 +223,8 @@ class Client
             $serviceName,
             $this->buildRequestAttributes($attributes)
         );
+
+        Storage::disk('local')->put(time().$serviceName.'Request.xml',$request);
 
         try {
             $response = $this->client->call('RDService', [
@@ -340,6 +363,7 @@ EOT;
      */
     protected function parseResponseXml($response)
     {
+        Storage::disk('local')->put(time().'Response.xml',$response);
         return new \SimpleXMLElement($response);
     }
 
