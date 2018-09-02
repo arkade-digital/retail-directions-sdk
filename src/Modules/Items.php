@@ -96,7 +96,7 @@ class Items extends AbstractModule
                 'ItemDetailsGet' => [
                     'itemReference' => $itemReference,
                     'storeCode' => $storeCode,
-                    'supplyChannelCode' => $supplyChannelCode,
+                    'supplychannelCode' => $supplyChannelCode,
                 ]
             ]);
         } catch (Exceptions\ServiceException $e) {
