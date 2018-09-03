@@ -84,19 +84,23 @@ class Items extends AbstractModule
     }
 
     /**
-     * Get web site feature items
+     * Return the item color details for a stores item
      *
+     * @param  string $itemReference
      * @param  string $storeCode
+     * @param  string $storeGroupCode
      * @return ColourItem|Collection
      * @throws Exceptions\NotFoundException
      * @throws Exceptions\ServiceException
      */
-    public function getWebSiteFeatureItems($storeCode)
+    public function getStoreColourDetails($itemReference, $storeCode, $storeGroupCode)
     {
         try {
-            $response = $this->client->call('GetWebSiteFeatureItems',[
-                'GetWebSiteFeatureItems' => [
+            $response = $this->client->call('ItemColourDetailsGet',[
+                'ItemColourDetailsGet' => [
                     'storeCode' => $storeCode,
+                    'storeGroupCode' => $storeGroupCode,
+                    'itemcolourRef' => $itemReference,
                 ]
             ]);
         } catch (Exceptions\ServiceException $e) {
@@ -125,7 +129,7 @@ class Items extends AbstractModule
                 'GetWebItemDetails' => [
                     'itemCode ' => $itemReference,
                     'storeCode' => $storeCode,
-                    'supplychannelCode' => $supplyChannelCode,
+                    'supplyChannelCode' => $supplyChannelCode,
                 ]
             ]);
         } catch (Exceptions\ServiceException $e) {
@@ -138,4 +142,5 @@ class Items extends AbstractModule
             throw $e;
         }
     }
+
 }
