@@ -52,6 +52,38 @@ class Items extends AbstractModule
     }
 
     /**
+     * Return the item details for a stores item
+     *
+     * @param  string $itemReference
+     * @param  string $storeCode
+     * @param  string $supplyChannelCode
+     * @param  Carbon|null $datetime
+     * @return Item|Collection
+     * @throws Exceptions\NotFoundException
+     * @throws Exceptions\ServiceException
+     */
+    public function getStoreItemDetail($itemReference, $storeCode, $supplyChannelCode)
+    {
+        try {
+            $response = $this->client->call('ItemDetailsGet', [
+                'ItemDetailsGet' => [
+                    'itemReference' => $itemReference,
+                    'storeCode' => $storeCode,
+                    'supplychannelCode' => $supplyChannelCode,
+                ]
+            ]);
+        } catch (Exceptions\ServiceException $e) {
+
+            if (60103 == $e->getCode()) {
+                throw (new Exceptions\NotFoundException)
+                    ->setHistoryContainer($e->getHistoryContainer());
+            }
+
+            throw $e;
+        }
+    }
+
+    /**
      * Get web site feature items
      *
      * @param  string $storeCode
@@ -79,22 +111,19 @@ class Items extends AbstractModule
     }
 
     /**
-     * Return the item details for a stores item
+     * Get web site feature items
      *
-     * @param  string $itemReference
      * @param  string $storeCode
-     * @param  string $supplyChannelCode
-     * @param  Carbon|null $datetime
-     * @return Item|Collection
+     * @return ColourItem|Collection
      * @throws Exceptions\NotFoundException
      * @throws Exceptions\ServiceException
      */
-    public function getStoreItemDetail($itemReference, $storeCode, $supplyChannelCode)
+    public function getWebItemDetails($itemReference, $storeCode, $supplyChannelCode)
     {
         try {
-            $response = $this->client->call('ItemDetailsGet', [
-                'ItemDetailsGet' => [
-                    'itemReference' => $itemReference,
+            $response = $this->client->call('GetWebItemDetails',[
+                'GetWebItemDetails' => [
+                    'itemCode ' => $itemReference,
                     'storeCode' => $storeCode,
                     'supplychannelCode' => $supplyChannelCode,
                 ]
