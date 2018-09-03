@@ -5,10 +5,10 @@ namespace Arkade\RetailDirections\Modules;
 use Carbon\Carbon;
 use DomainException;
 use Illuminate\Support\Collection;
-use Arkade\RetailDirections\Address;
 use Arkade\RetailDirections\ItemColour;
+use Arkade\RetailDirections\ItemDetail;
+use Arkade\RetailDirections\ItemColourDetail;
 use Arkade\RetailDirections\Exceptions;
-use Arkade\RetailDirections\Identification;
 
 class Items extends AbstractModule
 {
@@ -81,6 +81,13 @@ class Items extends AbstractModule
 
             throw $e;
         }
+
+        $items = collect([]);
+        foreach ($response->ItemDetails->ItemDetail as $item) {
+            $items->push(ItemDetail::fromXml($item));
+        }
+
+        return $items;
     }
 
     /**
@@ -99,8 +106,13 @@ class Items extends AbstractModule
             $response = $this->client->call('ItemColourDetailsGet',[
                 'ItemColourDetailsGet' => [
                     'storeCode' => $storeCode,
-                    'storeGroupCode' => $storeGroupCode,
-                    'itemcolourRef' => $itemReference,
+                    'storegroupCode' => $storeGroupCode,
+                    'itemTypeCode' => '',
+                ],
+                'ItemColourList' => [
+                    'ItemColour' => [
+                        'itemColourRef' => $itemReference
+                    ]
                 ]
             ]);
         } catch (Exceptions\ServiceException $e) {
@@ -111,6 +123,11 @@ class Items extends AbstractModule
             }
 
             throw $e;
+        }
+
+        $items = collect([]);
+        foreach ($response->ItemColourDetailsList->ItemColourDetails as $item) {
+            $items->push(ItemColourDetail::fromXml($item));
         }
     }
 
