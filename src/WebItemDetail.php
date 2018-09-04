@@ -2,6 +2,7 @@
 
 namespace Arkade\RetailDirections;
 
+use Illuminate\Support\Collection;
 use Illuminate\Support\Fluent;
 
 class WebItemDetail extends Fluent
@@ -12,6 +13,13 @@ class WebItemDetail extends Fluent
      * @var string
      */
     protected $itemCode;
+
+    /**
+     * Retail Directions Web Colour Items.
+     *
+     * @var Collection
+     */
+    protected $webColourItems;
 
     /**
      * constructor.
@@ -41,6 +49,24 @@ class WebItemDetail extends Fluent
     }
 
     /**
+     * @return Collection
+     */
+    public function getWebColourItems()
+    {
+        return $this->webColourItems;
+    }
+
+    /**
+     * @param Collection $webColourItems
+     * @return WebItemDetail
+     */
+    public function setWebColourItems($webColourItems)
+    {
+        $this->webColourItems = $webColourItems;
+        return $this;
+    }
+
+    /**
      * Create entity from provided XML element.
      *
      * @param  \SimpleXMLElement $xml
@@ -53,6 +79,12 @@ class WebItemDetail extends Fluent
 
         foreach ($xml->children() as $key => $value) {
             $webItemDetail->{$key} = (string) $value;
+        }
+
+        if ($xml->WebItemColourList) {
+            foreach ($xml->WebItemColourList as $webItemColour) {
+                $webItemDetail->getWebColourItems()->push(WebItemColour::fromXml($webItemColour));
+            }
         }
 
         return $webItemDetail;
