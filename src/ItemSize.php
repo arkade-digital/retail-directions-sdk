@@ -5,7 +5,7 @@ namespace Arkade\RetailDirections;
 use Illuminate\Support\Collection;
 use Illuminate\Support\Fluent;
 
-class ItemColourSize extends Fluent
+class ItemSize extends Fluent
 {
     /**
      * Retail Directions item size code.
@@ -40,7 +40,7 @@ class ItemColourSize extends Fluent
 
     /**
      * @param string $sizeCode
-     * @return WebItemColourSize
+     * @return ItemSize
      */
     public function setSizeCode($sizeCode)
     {
@@ -58,7 +58,7 @@ class ItemColourSize extends Fluent
 
     /**
      * @param string $barcode
-     * @return WebItemColourSize
+     * @return ItemSize
      */
     public function setBarcode($barcode)
     {
@@ -70,18 +70,18 @@ class ItemColourSize extends Fluent
      * Create entity from provided XML element.
      *
      * @param  \SimpleXMLElement $xml
-     * @return WebItemColourSize
+     * @return ItemSize
      */
     public static function fromXml(\SimpleXMLElement $xml) {
-        $webItemColourSize = new static;
+        $itemSize = new static;
 
-        $webItemColourSize->setSizeCode((string) $xml->sizeCode);
-        $webItemColourSize->setBarcode((string) $xml->sellcodeCode);
+        $itemSize->setSizeCode((string) $xml->sizeCode);
+        $itemSize->setBarcode((string) $xml->sellcodeCode);
 
         foreach ($xml->children() as $key => $value) {
-            $webItemColourSize->{$key} = (string) $value;
+            $itemSize->{$key} = (string) $value;
         }
 
-        return $webItemColourSize;
+        return $itemSize;
     }
 }
