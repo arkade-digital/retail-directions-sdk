@@ -130,6 +130,8 @@ class Items extends AbstractModule
         foreach ($response->ItemColourDetailsList->ItemColourDetails as $item) {
             $items->push(ItemColourDetail::fromXml($item));
         }
+
+        return $items;
     }
 
     /**
