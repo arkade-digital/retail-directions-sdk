@@ -5,7 +5,7 @@ namespace Arkade\RetailDirections;
 use Illuminate\Support\Collection;
 use Illuminate\Support\Fluent;
 
-class WebItemColourSize extends Fluent
+class ItemColourSize extends Fluent
 {
     /**
      * Retail Directions item size code.

@@ -2,6 +2,7 @@
 
 namespace Arkade\RetailDirections;
 
+use Illuminate\Support\Collection;
 use Illuminate\Support\Fluent;
 
 class ItemColourDetail extends Fluent
@@ -19,6 +20,20 @@ class ItemColourDetail extends Fluent
      * @var string
      */
     protected $itemCode;
+
+    /**
+     * Retail Directions item sizes.
+     *
+     * @var Collection
+     */
+    protected $itemSizes;
+
+    /**
+     * Retail Directions item editorials.
+     *
+     * @var Collection
+     */
+    protected $itemEditorials;
 
     /**
      * constructor.
@@ -71,6 +86,42 @@ class ItemColourDetail extends Fluent
     }
 
     /**
+     * @return Collection
+     */
+    public function getItemSizes()
+    {
+        return $this->itemSizes ?: $this->itemSizes = new Collection;
+    }
+
+    /**
+     * @param Collection $itemSizes
+     * @return ItemColourDetail
+     */
+    public function setItemSizes($itemSizes)
+    {
+        $this->itemSizes = $itemSizes;
+        return $this;
+    }
+
+    /**
+     * @return Collection
+     */
+    public function getItemEditorials()
+    {
+        return $this->itemEditorials ?: $this->itemEditorials = new Collection;
+    }
+
+    /**
+     * @param Collection $itemEditorials
+     * @return ItemColourDetail
+     */
+    public function setItemEditorials($itemEditorials)
+    {
+        $this->itemEditorials = $itemEditorials;
+        return $this;
+    }
+
+    /**
      * Create entity from provided XML element.
      *
      * @param  \SimpleXMLElement $xml
@@ -79,11 +130,26 @@ class ItemColourDetail extends Fluent
     public static function fromXml(\SimpleXMLElement $xml) {
         $itemColourDetail = new static;
 
-        $itemColourDetail->setItemColourRef((string) $xml->itemColourRef);
+        $itemColourDetail->setItemColourRef((string) $xml->itemcolourRef);
         $itemColourDetail->setItemCode((string) $xml->itemCode);
 
         foreach ($xml->children() as $key => $value) {
+            if($key === 'attributes') continue;
+            if($key === 'editorials') continue;
+            if($key === 'quantitiesAvailable') continue;
             $itemColourDetail->{$key} = (string) $value;
+        }
+
+        if ($xml->editorials) {
+            foreach ($xml->editorials->edtorial as $itemEditorial) {
+                $itemColourDetail->getItemEditorials()->push(ItemEditorial::fromXml($itemEditorial));
+            }
+        }
+
+        if ($xml->quantitiesAvailable) {
+            foreach ($xml->quantitiesAvailable->size as $itemSize) {
+                $itemColourDetail->getItemSizes()->push(ItemSize::fromXml($itemSize));
+            }
         }
 
         return $itemColourDetail;

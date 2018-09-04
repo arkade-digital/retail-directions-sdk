@@ -22,11 +22,11 @@ class WebItemColour extends Fluent
     protected $colourCode;
 
     /**
-     * Retail Directions Web Item Colour Sizes.
+     * Retail Directions item sizes.
      *
      * @var Collection
      */
-    protected $webItemColourSizes;
+    protected $webItemSizes;
 
     /**
      * constructor.
@@ -76,18 +76,18 @@ class WebItemColour extends Fluent
     /**
      * @return Collection
      */
-    public function getWebItemColourSizes()
+    public function getWebItemSizes()
     {
-        return $this->webItemColourSizes ?: $this->webItemColourSizes = new Collection;
+        return $this->webItemSizes ?: $this->webItemSizes = new Collection;
     }
 
     /**
-     * @param Collection $webItemColourSizes
+     * @param Collection $webItemSizes
      * @return WebItemColour
      */
-    public function setWebItemColourSizes($webItemColourSizes)
+    public function setWebItemSizes($webItemSizes)
     {
-        $this->webItemColourSizes = $webItemColourSizes;
+        $this->webItemSizes = $webItemSizes;
         return $this;
     }
 
@@ -108,8 +108,8 @@ class WebItemColour extends Fluent
         }
 
         if ($xml->WebItemColourSizeList) {
-            foreach ($xml->WebItemColourSizeList->WebItemColourSize as $webItemColourSize) {
-                $webItemColour->getWebItemColourSizes()->push(WebItemColourSize::fromXml($webItemColourSize));
+            foreach ($xml->WebItemColourSizeList->WebItemColourSize as $webItemSize) {
+                $webItemColour->getWebItemSizes()->push(WebItemSize::fromXml($webItemSize));
             }
         }
 
