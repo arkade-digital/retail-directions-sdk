@@ -67,7 +67,7 @@ class Items extends AbstractModule
             $response = $this->client->call('ItemColourStockMovementFind', [
                 'ItemColourStockMovementFind' => [
                     'storeCode' => $storeCode,
-                    'fromDate' => $this->client->formatDateTime($datetime),
+                    'fromDateTime' => $this->client->formatDateTime($datetime),
                 ]
             ]);
         } catch (Exceptions\ServiceException $e) {
