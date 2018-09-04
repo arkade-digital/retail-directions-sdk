@@ -108,7 +108,7 @@ class WebItemColour extends Fluent
         }
 
         if ($xml->WebItemColourSizeList) {
-            foreach ($xml->WebItemColourSizeList as $webItemColourSize) {
+            foreach ($xml->WebItemColourSizeList->WebItemColourSize as $webItemColourSize) {
                 $webItemColour->getWebItemColourSizes()->push(WebItemColourSize::fromXml($webItemColourSize));
             }
         }

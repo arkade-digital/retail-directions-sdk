@@ -82,7 +82,7 @@ class WebItemDetail extends Fluent
         }
 
         if ($xml->WebItemColourList) {
-            foreach ($xml->WebItemColourList as $webItemColour) {
+            foreach ($xml->WebItemColourList->WebItemColour as $webItemColour) {
                 $webItemDetail->getWebItemColours()->push(WebItemColour::fromXml($webItemColour));
             }
         }
