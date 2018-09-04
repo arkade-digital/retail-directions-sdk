@@ -43,7 +43,7 @@ class ItemColourDetail extends Fluent
      * Return Retail Directions item colour reference.
      *
      * @param  string $id
-     * @return Customer
+     * @return ItemColourDetail
      */
     public function setItemColourRef($itemColourRef)
     {
@@ -62,7 +62,7 @@ class ItemColourDetail extends Fluent
 
     /**
      * @param string $itemCode
-     * @return ItemDetail
+     * @return ItemColourDetail
      */
     public function setItemCode($itemCode)
     {

@@ -8,6 +8,7 @@ use Illuminate\Support\Collection;
 use Arkade\RetailDirections\ItemColour;
 use Arkade\RetailDirections\ItemDetail;
 use Arkade\RetailDirections\ItemColourDetail;
+use Arkade\RetailDirections\WebItemDetail;
 use Arkade\RetailDirections\Exceptions;
 
 class Items extends AbstractModule
@@ -135,7 +136,7 @@ class Items extends AbstractModule
      * Get web site feature items
      *
      * @param  string $storeCode
-     * @return ColourItem|Collection
+     * @return WebItemDetail|Collection
      * @throws Exceptions\NotFoundException
      * @throws Exceptions\ServiceException
      */
@@ -158,6 +159,8 @@ class Items extends AbstractModule
 
             throw $e;
         }
+
+        return WebItemDetail::fromXml($response->WebItem);
     }
 
 }
