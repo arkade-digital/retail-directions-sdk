@@ -22,6 +22,13 @@ class WebItemColour extends Fluent
     protected $colourCode;
 
     /**
+     * Retail Directions Web Item Colour Sizes.
+     *
+     * @var Collection
+     */
+    protected $webItemColourSizes;
+
+    /**
      * constructor.
      *
      */
@@ -67,6 +74,24 @@ class WebItemColour extends Fluent
     }
 
     /**
+     * @return Collection
+     */
+    public function getWebItemColourSizes()
+    {
+        return $this->webItemColourSizes ?: $this->webItemColourSizes = new Collection;
+    }
+
+    /**
+     * @param Collection $webItemColourSizes
+     * @return WebItemColour
+     */
+    public function setWebItemColourSizes($webItemColourSizes)
+    {
+        $this->webItemColourSizes = $webItemColourSizes;
+        return $this;
+    }
+
+    /**
      * Create entity from provided XML element.
      *
      * @param  \SimpleXMLElement $xml
@@ -84,7 +109,7 @@ class WebItemColour extends Fluent
 
         if ($xml->WebItemColourSizeList) {
             foreach ($xml->WebItemColourSizeList as $webItemColourSize) {
-                $webItemColour->getWebColourSizes()->push(WebItemColourSize::fromXml($webItemColourSize));
+                $webItemColour->getWebItemColourSizes()->push(WebItemColourSize::fromXml($webItemColourSize));
             }
         }
 

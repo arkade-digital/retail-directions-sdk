@@ -15,11 +15,11 @@ class WebItemDetail extends Fluent
     protected $itemCode;
 
     /**
-     * Retail Directions Web Colour Items.
+     * Retail Directions Web Item Colours.
      *
      * @var Collection
      */
-    protected $webColourItems;
+    protected $webItemColours;
 
     /**
      * constructor.
@@ -51,18 +51,18 @@ class WebItemDetail extends Fluent
     /**
      * @return Collection
      */
-    public function getWebColourItems()
+    public function getWebItemColours()
     {
-        return $this->webColourItems;
+        return $this->webItemColours ?: $this->webItemColours = new Collection;
     }
 
     /**
-     * @param Collection $webColourItems
+     * @param Collection $webItemColours
      * @return WebItemDetail
      */
-    public function setWebColourItems($webColourItems)
+    public function setWebItemColours($webItemColours)
     {
-        $this->webColourItems = $webColourItems;
+        $this->webItemColours = $webItemColours;
         return $this;
     }
 
@@ -83,7 +83,7 @@ class WebItemDetail extends Fluent
 
         if ($xml->WebItemColourList) {
             foreach ($xml->WebItemColourList as $webItemColour) {
-                $webItemDetail->getWebColourItems()->push(WebItemColour::fromXml($webItemColour));
+                $webItemDetail->getWebItemColours()->push(WebItemColour::fromXml($webItemColour));
             }
         }
 
