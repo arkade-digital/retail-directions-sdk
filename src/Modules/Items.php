@@ -18,7 +18,7 @@ class Items extends AbstractModule
      *
      * @param  string $storeCode
      * @param  Carbon|null $datetime
-     * @return ColourItem|Collection
+     * @return ItemColour|Collection
      * @throws Exceptions\NotFoundException
      * @throws Exceptions\ServiceException
      */
@@ -34,6 +34,45 @@ class Items extends AbstractModule
                 $request['BulkItemRangeGet']['fromDate'] = $this->client->formatDateTime($datetime);
             }
             $response = $this->client->call('BulkItemRangeGet',$request);
+        } catch (Exceptions\ServiceException $e) {
+
+            if (60103 == $e->getCode()) {
+                throw (new Exceptions\NotFoundException)
+                    ->setHistoryContainer($e->getHistoryContainer());
+            }
+
+            throw $e;
+        }
+
+        $items = collect([]);
+        foreach ($response->ItemColourList->ItemColour as $item) {
+            $items->push(ItemColour::fromXml($item));
+        }
+
+        return $items;
+    }
+
+    /**
+     * Return the colour range for a store
+     *
+     * @param  string $storeCode
+     * @param  Carbon|null $datetime
+     * @return ItemColour|Collection
+     * @throws Exceptions\NotFoundException
+     * @throws Exceptions\ServiceException
+     */
+    public function getStoreItemStockMovement($storeCode, Carbon $datetime = null)
+    {
+        try {
+            $request = [
+                'ItemColourStockMovementFind' => [
+                    'storeCode' => $storeCode,
+                ]
+            ];
+            if(!is_null($datetime)){
+                $request['ItemColourStockMovementFind']['fromDate'] = $this->client->formatDateTime($datetime);
+            }
+            $response = $this->client->call('ItemColourStockMovementFind',$request);
         } catch (Exceptions\ServiceException $e) {
 
             if (60103 == $e->getCode()) {
@@ -97,7 +136,7 @@ class Items extends AbstractModule
      * @param  string $itemReference
      * @param  string $storeCode
      * @param  string $storeGroupCode
-     * @return ColourItem|Collection
+     * @return ItemColourDetail|Collection
      * @throws Exceptions\NotFoundException
      * @throws Exceptions\ServiceException
      */
@@ -137,8 +176,10 @@ class Items extends AbstractModule
     /**
      * Get web site feature items
      *
+     * @param  string $itemReference
      * @param  string $storeCode
-     * @return WebItemDetail|Collection
+     * @param  string $supplyChannelCode
+     * @return WebItemDetail
      * @throws Exceptions\NotFoundException
      * @throws Exceptions\ServiceException
      */
