@@ -61,18 +61,15 @@ class Items extends AbstractModule
      * @throws Exceptions\NotFoundException
      * @throws Exceptions\ServiceException
      */
-    public function getStoreItemStockMovement($storeCode, Carbon $datetime = null)
+    public function getStoreItemStockMovement($storeCode, Carbon $datetime)
     {
         try {
-            $request = [
+            $response = $this->client->call('ItemColourStockMovementFind', [
                 'ItemColourStockMovementFind' => [
                     'storeCode' => $storeCode,
+                    'fromDate' => $this->client->formatDateTime($datetime),
                 ]
-            ];
-            if(!is_null($datetime)){
-                $request['ItemColourStockMovementFind']['fromDate'] = $this->client->formatDateTime($datetime);
-            }
-            $response = $this->client->call('ItemColourStockMovementFind',$request);
+            ]);
         } catch (Exceptions\ServiceException $e) {
 
             if (60103 == $e->getCode()) {
