@@ -53,7 +53,7 @@ class Items extends AbstractModule
     }
 
     /**
-     * Return the colour range for a store
+     * Return the colour items whose stock levels have changed for a store
      *
      * @param  string $storeCode
      * @param  Carbon|null $datetime
