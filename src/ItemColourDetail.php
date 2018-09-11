@@ -36,6 +36,13 @@ class ItemColourDetail extends Fluent
     protected $itemEditorials;
 
     /**
+     * Retail Direction  original xml 
+     *
+     * @var 
+     */
+    protected $xml;
+
+    /**
      * constructor.
      *
      */
@@ -120,6 +127,15 @@ class ItemColourDetail extends Fluent
         $this->itemEditorials = $itemEditorials;
         return $this;
     }
+    
+    public function setXml($xml) {
+        $this->xml = $xml;
+        return $this;
+    }
+    
+    public function getXml() {
+        return $this->xml;
+    }
 
     /**
      * Create entity from provided XML element.
@@ -129,7 +145,7 @@ class ItemColourDetail extends Fluent
      */
     public static function fromXml(\SimpleXMLElement $xml) {
         $itemColourDetail = new static;
-
+        $itemColourDetail->setXml($xml);        
         $itemColourDetail->setItemColourRef((string) $xml->itemcolourRef);
         $itemColourDetail->setItemCode((string) $xml->itemCode);
 
