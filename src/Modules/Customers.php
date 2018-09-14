@@ -124,6 +124,38 @@ class Customers extends AbstractModule
     }
 
     /**
+     * Return collection of customers for a provided identification.
+     *
+     * @param  Identification $identification
+     * @param  Carbon|null    $datetime
+     * @return Collection
+     * @throws Exceptions\NotFoundException
+     * @throws Exceptions\ServiceException
+     */
+    public function findChangedCustomers(Carbon $from, Carbon $to)
+    {
+        $response = $this->client->call('ChangedCustomerFind', [
+            'ChangedCustomerFind' => [
+                'FromDateTime' => $this->client->formatDateTime($from),
+                'ToDateTime' => $this->client->formatDateTime($to),
+            ]
+        ]);
+
+        $collection = new Collection;
+
+        foreach ($response->ChangedCustomers->Customer as $customerIdentification) {
+            $collection->push($this->findById($customerIdentification->customerId));
+        }
+
+        if ($collection->isEmpty()) {
+            throw (new Exceptions\NotFoundException)
+                ->setHistoryContainer($this->client->getHistoryContainer());
+        }
+
+        return $collection;
+    }
+
+    /**
      * Create provided customer.
      *
      * @param  Customer $customer
