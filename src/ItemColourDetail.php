@@ -36,6 +36,13 @@ class ItemColourDetail extends Fluent
     protected $itemEditorials;
 
     /**
+     * Retail Direction  original xml 
+     *
+     * @var 
+     */
+    protected $xml;
+
+    /**
      * constructor.
      *
      */
