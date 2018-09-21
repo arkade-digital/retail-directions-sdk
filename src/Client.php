@@ -120,6 +120,16 @@ class Client
     /**
      * Return customers module.
      *
+     * @return Modules\Orders
+     */
+    public function orders()
+    {
+        return new Modules\Orders($this);
+    }
+
+    /**
+     * Return customers module.
+     *
      * @return Modules\Customers
      */
     public function customers()
@@ -227,6 +237,7 @@ class Client
         Storage::disk('local')->put(time().$serviceName.'Request.xml',$request);
 
         try {
+
             $response = $this->client->call('RDService', [
                 'RDService' => [
                     'request' => $request
