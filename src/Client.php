@@ -392,7 +392,7 @@ EOT;
     {
         if (! $this->historyContainer) return;
 
-        $this->historyContainer->record(new Fluent([
+        $history = new Fluent([
             'request'         => $this->buildLastRequest(),
             'requestHeaders'  => html_entity_decode($this->client->getLastRequestHeaders()),
             'requestBody'     => html_entity_decode($this->client->getLastRequest()),
@@ -402,15 +402,23 @@ EOT;
             'responseBody'    => html_entity_decode($this->client->getLastResponse()),
             'serviceResult'   => $serviceResult ? substr($serviceResult, 3) : null, // Trim weird characters from beginning
             'exception'       => $exception
-        ]));
+        ]);
 
-        $recorder = new Recorder((new EloquentDriver(new TransactionModel(), new TransactionFactory())));
-        $transaction = new Transaction();
-        $transaction->setRequest($this->buildLastRequest());
-        $transaction->setResponse($this->buildLastResponse());
-        $transaction->pushTags('retail-directions','outgoing');
+        $this->historyContainer->record($history);
 
-        $recorder->record($transaction);
+        if($history->get('request')){
+            $recorder = new Recorder((new EloquentDriver(new TransactionModel(), new TransactionFactory())));
+            $transaction = new Transaction();
+            $transaction->setRequest($this->buildLastRequest());
+            $transaction->setResponse($this->buildLastResponse());
+            $transaction->pushTags('retail-directions','outgoing');
+
+            if($exception){
+                $transaction->setException($exception);
+            }
+
+            $recorder->record($transaction);
+        }
     }
 
     /**
