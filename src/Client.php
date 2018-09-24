@@ -234,8 +234,6 @@ class Client
             $this->buildRequestAttributes($attributes)
         );
 
-        Storage::disk('local')->put(time().$serviceName.'Request.xml',$request);
-
         try {
 
             $response = $this->client->call('RDService', [
@@ -374,7 +372,6 @@ EOT;
      */
     protected function parseResponseXml($response)
     {
-        Storage::disk('local')->put(time().'Response.xml',$response);
         return new \SimpleXMLElement($response);
     }
 
@@ -401,6 +398,14 @@ EOT;
             'serviceResult'   => $serviceResult ? substr($serviceResult, 3) : null, // Trim weird characters from beginning
             'exception'       => $exception
         ]));
+
+        $recorder = new Recorder((new EloquentDriver(new TransactionModel(), new TransactionFactory())));
+        $transaction = new Transaction();
+        $transaction->setRequest($this->buildLastRequest());
+        $transaction->setResponse($this->buildLastResponse());
+        $transaction->pushTags('retail-directions','outgoing');
+
+        $recorder->record($transaction);
     }
 
     /**

@@ -28,8 +28,6 @@ class LaravelServiceProvider extends ServiceProvider
 
             $historyContainer = new HistoryContainer;
 
-            $this->setupRecorder($historyContainer);
-
             $client->setHistoryContainer($historyContainer);
 
             return $client;
@@ -51,43 +49,5 @@ class LaravelServiceProvider extends ServiceProvider
         }
 
         return null;
-    }
-
-    /**
-     * Setup recorder middleware if the HttpRecorder plugin is bound.
-     *
-     * @param  HistoryContainer $historyContainer
-     * @return HistoryContainer
-     */
-    protected function setupRecorder(HistoryContainer $historyContainer)
-    {
-        if (! $this->app->bound('Omneo\Plugins\HttpRecorder\Recorder')) {
-            return $historyContainer;
-        }
-
-        $recorder = $this->app->make('Omneo\Plugins\HttpRecorder\Recorder');
-
-        $historyContainer->push(function (Fluent $transaction) use ($recorder)
-        {
-            // Request could not be processed, we can't record this
-            if (! $transaction->request)
-            {
-                $this->app->make('Psr\Log\LoggerInterface')->error(
-                    'Could not process Retail Directions request for recorder',
-                    ['headers' => $transaction->requestHeaders, 'body' => $transaction->requestBody]
-                );
-
-                return;
-            }
-
-            $recorder->record(
-                $transaction->request,
-                $transaction->response,
-                $transaction->exception,
-                ['retail-directions', 'outgoing']
-            );
-        });
-
-        return $historyContainer;
     }
 }
