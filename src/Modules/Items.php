@@ -133,18 +133,19 @@ class Items extends AbstractModule
      * @param  string $itemReference
      * @param  string $storeCode
      * @param  string $storeGroupCode
+     * @param  string $itemCode
      * @return ItemColourDetail|Collection
      * @throws Exceptions\NotFoundException
      * @throws Exceptions\ServiceException
      */
-    public function getStoreColourDetails($itemReference, $storeCode, $storeGroupCode)
+    public function getStoreColourDetails($itemReference, $storeCode, $storeGroupCode, $itemCode = '')
     {
         try {
             $response = $this->client->call('ItemColourDetailsGet',[
                 'ItemColourDetailsGet' => [
                     'storeCode' => $storeCode,
                     'storegroupCode' => $storeGroupCode,
-                    'itemTypeCode' => '',
+                    'itemTypeCode' => $itemCode,
                 ],
                 'ItemColourList' => [
                     'ItemColour' => [
