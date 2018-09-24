@@ -3,6 +3,7 @@
 namespace Arkade\RetailDirections\Modules;
 
 use Arkade\RetailDirections\LineItem;
+use Arkade\RetailDirections\PaymentDetail;
 use Carbon\Carbon;
 use DomainException;
 use Illuminate\Support\Collection;
@@ -14,84 +15,32 @@ use Arkade\RetailDirections\Identification;
 class Orders extends AbstractModule
 {
     /**
-     * Return a single Order by ID.
+     * Finalise provided order.
      *
-     * @param  string      $id
-     * @param  string      $customerId
-     * @param  Carbon|null $datetime
-     * @return Customer
-     * @throws Exceptions\NotFoundException
-     * @throws Exceptions\ServiceException
-     */
-    public function findById($id, $customerId, Carbon $datetime = null)
-    {
-        try {
-            $response = $this->client->call('SalesOrderGet', [
-                'SalesOrderGet' => [
-                    'salesOrderCode' => $id,
-                    'customerId' => $customerId,
-                ]
-            ]);
-        } catch (Exceptions\ServiceException $e) {
-            if (60103 == $e->getCode()) {
-                throw (new Exceptions\NotFoundException)
-                    ->setHistoryContainer($e->getHistoryContainer());
-            }
-
-            throw $e;
-        }
-
-        return Order::fromXml(
-            $response->Customer,
-            $response->CustomerIdentifications,
-            $response->Addresses
-        );
-    }
-
-    /**
-     * Create provided customer.
+     * @param Order $order
+     * @param PaymentDetail[]|Collection $payments
      *
-     * @param  Order $order
-     * @param  Carbon   $datetime Optional datetime for findById request
      * @return Order
-     * @throws Exceptions\AlreadyExistsException
-     * @throws Exceptions\ValidationException
-     * @throws Exceptions\ServiceException
      */
-    public function finalise(Order $order, $paymentReference = '', $paymentAmount = 0)
+    public function finalise(Order $order, $payments)
     {
 	    $payload = [
 	    	'ConfirmationDetail' => [
 	    		'salesorderCode' => $order->getId(),
 	    		'action' => 'Approve',
-	    		'paymentReferenceNumber' => $paymentReference,
 		    ],
-		    'PaymentDetails' => [
-			    'PaymentDetail' => [
-				    'paymentType' => 'CASH',
-				    'paymentReferenceNumber' => $paymentReference,
-				    'paymentAmount' => $paymentAmount,
-				    'currencyCode' => 'AUD',
-				    'paymentResponseMessage' => 'Approved',
-				    'paymentResultCode' => 0,
-			    ]
-		    ]
 	    ];
+
+	    // Add payments to order is available, this is the last chance below the order is locked
+	    if ($payments->count()) {
+		    $payload['PaymentDetails'] = $payments->map(function(PaymentDetail $payment) {
+			    return $payment->getXmlArray();
+		    })->toArray();
+	    }
 
 	    try {
 		    $response = $this->client->call('SalesOrderFinalise', $payload);
 	    } catch (Exceptions\ServiceException $e) {
-
-		    if (58104 == $e->getCode()) {
-			    throw (new Exceptions\AlreadyExistsException)
-				    ->setHistoryContainer($e->getHistoryContainer());
-		    }
-
-		    if (58110 == $e->getCode()) {
-			    throw (new Exceptions\ValidationException)
-				    ->setHistoryContainer($e->getHistoryContainer());
-		    }
-
 		    throw $e;
 	    }
 
@@ -102,7 +51,7 @@ class Orders extends AbstractModule
     }
 
     /**
-     * Create provided customer.
+     * Create provided order.
      *
      * @param  Order $order
      * @param  Carbon   $datetime Optional datetime for findById request
@@ -125,29 +74,7 @@ class Orders extends AbstractModule
     }
 
     /**
-     * Update provided customer.
-     *
-     * @param  Customer $customer
-     * @param  Carbon   $datetime Optional datetime for findById request
-     * @return Order
-     * @throws Exceptions\NotFoundException
-     * @throws Exceptions\AlreadyExistsException
-     * @throws Exceptions\ValidationException
-     * @throws Exceptions\ServiceException
-     */
-    public function update(Order $order, Carbon $datetime = null)
-    {
-        if (! $customer->getId()) {
-            throw new DomainException('You must provide an ID when updating a order.');
-        }
-
-        $this->findById($order->getId(), $datetime);
-
-        return $this->persist($order);
-    }
-
-    /**
-     * Create or update the provided customer entity.
+     * Create or update the provided order.
      *
      * @param  Order $order
      * @return Order
