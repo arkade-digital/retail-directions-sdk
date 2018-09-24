@@ -33,14 +33,12 @@ class Orders extends AbstractModule
                 ]
             ]);
         } catch (Exceptions\ServiceException $e) {
-
             if (60103 == $e->getCode()) {
                 throw (new Exceptions\NotFoundException)
                     ->setHistoryContainer($e->getHistoryContainer());
             }
 
             throw $e;
-
         }
 
         return Order::fromXml(
@@ -48,6 +46,59 @@ class Orders extends AbstractModule
             $response->CustomerIdentifications,
             $response->Addresses
         );
+    }
+
+    /**
+     * Create provided customer.
+     *
+     * @param  Order $order
+     * @param  Carbon   $datetime Optional datetime for findById request
+     * @return Order
+     * @throws Exceptions\AlreadyExistsException
+     * @throws Exceptions\ValidationException
+     * @throws Exceptions\ServiceException
+     */
+    public function finalise(Order $order, $paymentReference = '', $paymentAmount = 0)
+    {
+	    $payload = [
+	    	'ConfirmationDetail' => [
+	    		'salesorderCode' => $order->getId(),
+	    		'action' => 'Approve',
+	    		'paymentReferenceNumber' => $paymentReference,
+		    ],
+		    'PaymentDetails' => [
+			    'PaymentDetail' => [
+				    'paymentType' => 'CASH',
+				    'paymentReferenceNumber' => $paymentReference,
+				    'paymentAmount' => $paymentAmount,
+				    'currencyCode' => 'AUD',
+				    'paymentResponseMessage' => 'Approved',
+				    'paymentResultCode' => 0,
+			    ]
+		    ]
+	    ];
+
+	    try {
+		    $response = $this->client->call('SalesOrderFinalise', $payload);
+	    } catch (Exceptions\ServiceException $e) {
+
+		    if (58104 == $e->getCode()) {
+			    throw (new Exceptions\AlreadyExistsException)
+				    ->setHistoryContainer($e->getHistoryContainer());
+		    }
+
+		    if (58110 == $e->getCode()) {
+			    throw (new Exceptions\ValidationException)
+				    ->setHistoryContainer($e->getHistoryContainer());
+		    }
+
+		    throw $e;
+	    }
+
+	    return Order::fromXml(
+		    $response->SalesOrderDetail,
+		    $response->SalesOrderLines
+	    );
     }
 
     /**

@@ -106,10 +106,17 @@ class Order extends Fluent
     }
 
 	/**
-	 * @return Collection
+	 * @return Collection|LineItem[]
 	 */
 	public function getLineItems() {
 		return $this->lineItems;
+	}
+
+	/**
+	 * @return Collection
+	 */
+	public function getTotal() {
+		return $this->getLineItems()->sum('');
 	}
 
     /**
@@ -126,8 +133,7 @@ class Order extends Fluent
      * Create entity from provided XML element.
      *
      * @param  \SimpleXMLElement $xml
-     * @param  \SimpleXMLElement $identificationsXml
-     * @param  \SimpleXMLElement $addressesXml
+     * @param  \SimpleXMLElement $lineItemsXml
      * @return Order
      */
     public static function fromXml(
