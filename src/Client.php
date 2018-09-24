@@ -11,6 +11,10 @@ use UnexpectedValueException;
 use Illuminate\Support\Fluent;
 use Psr\Http\Message\RequestInterface;
 use Psr\Http\Message\ResponseInterface;
+use Arkade\HttpRecorder\Recorder;
+use Arkade\HttpRecorder\Drivers\EloquentDriver;
+use Arkade\HttpRecorder\Integrations\Laravel\TransactionFactory;
+use Arkade\HttpRecorder\Integrations\Laravel\TransactionModel;
 
 class Client
 {
