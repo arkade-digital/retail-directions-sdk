@@ -153,6 +153,14 @@ class Client
     }
 
     /**
+     * @return Modules\GiftVoucher
+     */
+    public function giftVouchers()
+    {
+        return new Modules\GiftVouchers($this);
+    }
+
+    /**
      * Return loyalty customers module.
      *
      * @return Modules\LoyaltyCustomers
