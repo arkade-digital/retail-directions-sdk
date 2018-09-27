@@ -14,6 +14,37 @@ use Arkade\RetailDirections\Identification;
 
 class Orders extends AbstractModule
 {
+
+	/**
+	 * Find order.
+	 *
+	 * @param $orderId
+	 * @param $customerId
+	 *
+	 * @return Order
+	 */
+	public function find($orderId, $customerId)
+	{
+		$payload = [
+			'SalesOrderGet' => [
+				'salesorderCode' => $orderId,
+				'customerId' => $customerId,
+			],
+		];
+
+		try {
+			$response = $this->client->call('SalesOrderGet', $payload);
+		} catch (Exceptions\ServiceException $e) {
+			throw $e;
+		}
+
+		return Order::fromXml(
+			$response->SalesOrderDetail,
+			$response->SalesOrderLines,
+			$response->ConsignmentLists
+		);
+	}
+
     /**
      * Finalise provided order.
      *
