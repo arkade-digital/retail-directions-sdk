@@ -45,7 +45,7 @@ class Orders extends AbstractModule
 	    }
 
 	    return Order::fromXml(
-		    $response->SalesOrderDetail,
+		    $response->ConfirmationDetail,
 		    $response->SalesOrderLines
 	    );
     }
@@ -84,7 +84,12 @@ class Orders extends AbstractModule
      */
     protected function persist(Order $order)
     {
-        $payload = ['SalesOrderDetail' => $order->getAttributes()];
+        $payload = ['SalesOrderDetail' => array_except(
+	        $order->getAttributes(),
+	        [
+	        	'benefits'
+	        ]
+        )];
 
         if ($order->getId()) {
             $payload['SalesOrderDetail']['salesOrderCode'] = $order->getId();
@@ -94,6 +99,10 @@ class Orders extends AbstractModule
 		    $payload['SalesOrderLines'] = $order->getLineItems()->map(function(LineItem $item) {
 			    return $item->getXmlArray();
 		    })->toArray();
+	    }
+
+	    if ($benefits = $order->get('benefits')) {
+		    $payload['SalesOrderBenefits'] = $benefits;
 	    }
 
         try {
