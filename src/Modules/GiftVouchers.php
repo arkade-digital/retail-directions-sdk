@@ -10,18 +10,19 @@ use Arkade\RetailDirections\Exceptions;
 class GiftVouchers extends AbstractModule
 {
 
-    public function getGiftVoucher($referenceNumber, $pin, $locationCode)
+    public function getGiftVouchers($referenceNumber, $pin, $locationCode)
     {
         try {
-            $request = [
+            $response = $this->client->call('VoucherEnquiry', [
                 'VoucherDetails' => [
                     'giftvoucher_reference' => $referenceNumber,
-                    'location_code' => $storeCode,
+                    'giftvoucherscheme_code' => '04',
+                    'location_code' => $locationCode,
                     'pin' => $pin
                 ]
-            ];
-
-            $response = $this->client->call('VoucherEnquiry',$request);
+            ]);
+            
+            //$response = $this->client->call('VoucherEnquiry',$request);
         } catch (Exceptions\ServiceException $e) {
 
             if (60103 == $e->getCode()) {
