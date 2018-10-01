@@ -164,7 +164,7 @@ class Customers extends AbstractModule {
 				'Address1'    => $customer->get('address1'),
 				'suburb'      => $customer->get('suburb'),
 				'state'       => $customer->get('state'),
-				'countryCode' => $customer->get('countryCode') ?: 'AUS',
+				'countryCode' => $customer->get('countryCode') ?: 'AU',
 				'postCode'    => $customer->get('postCode'),
 			]
 		]);
