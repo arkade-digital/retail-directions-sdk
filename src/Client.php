@@ -230,17 +230,19 @@ class Client
      */
     public function call($serviceName, $attributes = [])
     {
+        // header
         $this->client->addSoapInputHeader(
             $this->buildSecurityTokenHeader($serviceName)
         );
 
+        // xml req
         $request = $this->buildRequestXml(
             $serviceName,
             $this->buildRequestAttributes($attributes)
         );
 
         try {
-
+            // call rd service
             $response = $this->client->call('RDService', [
                 'RDService' => [
                     'request' => $request
@@ -253,6 +255,7 @@ class Client
 
         $this->persistHistory($request, $response->RDServiceResult);
 
+        // xml res from rd
         $response = $this->parseResponseXml($response->RDServiceResult);
 
         if ($response->ErrorResponse) {
