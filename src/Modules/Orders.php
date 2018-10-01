@@ -14,6 +14,37 @@ use Arkade\RetailDirections\Identification;
 
 class Orders extends AbstractModule
 {
+
+	/**
+	 * Find order.
+	 *
+	 * @param $orderId
+	 * @param $customerId
+	 *
+	 * @return Order
+	 */
+	public function find($orderId, $customerId)
+	{
+		$payload = [
+			'SalesOrderGet' => [
+				'salesorderCode' => $orderId,
+				'customerId' => $customerId,
+			],
+		];
+
+		try {
+			$response = $this->client->call('SalesOrderGet', $payload);
+		} catch (Exceptions\ServiceException $e) {
+			throw $e;
+		}
+
+		return Order::fromXml(
+			$response->SalesOrderDetail,
+			$response->SalesOrderLines,
+			$response->ConsignmentLists
+		);
+	}
+
     /**
      * Finalise provided order.
      *
@@ -45,7 +76,7 @@ class Orders extends AbstractModule
 	    }
 
 	    return Order::fromXml(
-		    $response->SalesOrderDetail,
+		    $response->ConfirmationDetail,
 		    $response->SalesOrderLines
 	    );
     }
@@ -84,7 +115,12 @@ class Orders extends AbstractModule
      */
     protected function persist(Order $order)
     {
-        $payload = ['SalesOrderDetail' => $order->getAttributes()];
+        $payload = ['SalesOrderDetail' => array_except(
+	        $order->getAttributes(),
+	        [
+	        	'benefits'
+	        ]
+        )];
 
         if ($order->getId()) {
             $payload['SalesOrderDetail']['salesOrderCode'] = $order->getId();
@@ -94,6 +130,10 @@ class Orders extends AbstractModule
 		    $payload['SalesOrderLines'] = $order->getLineItems()->map(function(LineItem $item) {
 			    return $item->getXmlArray();
 		    })->toArray();
+	    }
+
+	    if ($benefits = $order->get('benefits')) {
+		    $payload['SalesOrderBenefits'] = $benefits;
 	    }
 
         try {

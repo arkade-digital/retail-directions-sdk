@@ -138,14 +138,14 @@ class Items extends AbstractModule
      * @throws Exceptions\NotFoundException
      * @throws Exceptions\ServiceException
      */
-    public function getStoreColourDetails($itemReference, $storeCode, $storeGroupCode, $itemCode = '')
+    public function getStoreColourDetails($itemReference, $storeCode, $storeGroupCode, $itemTypeCode)
     {
         try {
             $response = $this->client->call('ItemColourDetailsGet',[
                 'ItemColourDetailsGet' => [
                     'storeCode' => $storeCode,
                     'storegroupCode' => $storeGroupCode,
-                    'itemTypeCode' => $itemCode,
+                    'itemTypeCode' => $itemTypeCode,
                 ],
                 'ItemColourList' => [
                     'ItemColour' => [
