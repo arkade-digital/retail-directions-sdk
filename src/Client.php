@@ -48,6 +48,13 @@ class Client
     protected $historyContainer;
 
     /**
+     * Http recorder.
+     *
+     * @var HttpRecorder|null
+     */
+    protected $recorder;
+
+    /**
      * Location.
      * @var Location
      */
@@ -121,6 +128,26 @@ class Client
 
         return $this;
     }
+
+    /**
+     * @return HttpRecorder|null
+     */
+    public function getRecorder()
+    {
+        return $this->recorder;
+    }
+
+    /**
+     * @param HttpRecorder|null $recorder
+     * @return Client
+     */
+    public function setRecorder($recorder)
+    {
+        $this->recorder = $recorder;
+        return $this;
+    }
+
+
 
     /**
      * Return customers module.
@@ -233,10 +260,11 @@ class Client
      *
      * @param  string $serviceName
      * @param  array  $attributes
+     * @param  string $requestName
      * @return mixed
      * @throws Exceptions\ServiceException
      */
-    public function call($serviceName, $attributes = [], $requestName )
+    public function call($serviceName, $attributes = [], $requestName=false)
     {
         $this->client->addSoapInputHeader(
             $this->buildSecurityTokenHeader($serviceName)
@@ -420,7 +448,6 @@ EOT;
         $this->historyContainer->record($history);
 
         if($history->get('request')){
-            $recorder = new Recorder((new EloquentDriver(new TransactionModel(), new TransactionFactory())));
             $transaction = new Transaction();
             $transaction->setRequest($this->buildLastRequest());
             $transaction->setResponse($this->buildLastResponse());
@@ -430,7 +457,7 @@ EOT;
                 $transaction->setException($exception);
             }
 
-            $recorder->record($transaction);
+            $this->recorder->record($transaction);
         }
     }
 
