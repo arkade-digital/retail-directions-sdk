@@ -43,13 +43,6 @@ class StockAvailability extends Fluent
     protected $qty;
 
     /**
-     * Retail Direction  original xml 
-     *
-     * @var 
-     */
-    protected $xml;
-
-    /**
      * constructor.
      *
      */
@@ -162,7 +155,7 @@ class StockAvailability extends Fluent
     public static function fromXml(\SimpleXMLElement $xml) {
         $stockAvailability = new static;
 
-        $stockAvailability->setItemColourRef((string) $xml->SKU->itemcolourRef);
+        $stockAvailability->setItemColourRef((string) $xml->SKU->itemColourRef);
         $stockAvailability->setSizeCode((string) $xml->SKU->sizeCode);
         $stockAvailability->setSellCode((string) $xml->SKU->sellcodeCode);
         $stockAvailability->setStoreCode((string) $xml->Store->storeCode);
