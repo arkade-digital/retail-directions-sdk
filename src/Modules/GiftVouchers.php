@@ -12,15 +12,19 @@ class GiftVouchers extends AbstractModule
 
     public function getGiftVouchers($referenceNumber, $pin, $locationCode)
     {
+
         try {
-            $response = $this->client->call('VoucherEnquiry', [
+            $response = $this->client->call('GetVoucherEnquire', [
                 'VoucherDetails' => [
                     'giftvoucher_reference' => $referenceNumber,
                     'giftvoucherscheme_code' => '04',
                     'location_code' => $locationCode,
                     'pin' => $pin
-                ]
-            ]);
+                ],
+
+              ],
+                'VoucherEnquiry'
+            );
             
             //$response = $this->client->call('VoucherEnquiry',$request);
         } catch (Exceptions\ServiceException $e) {

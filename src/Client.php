@@ -236,7 +236,7 @@ class Client
      * @return mixed
      * @throws Exceptions\ServiceException
      */
-    public function call($serviceName, $attributes = [])
+    public function call($serviceName, $attributes = [], $requestName )
     {
         $this->client->addSoapInputHeader(
             $this->buildSecurityTokenHeader($serviceName)
@@ -244,8 +244,11 @@ class Client
 
         $request = $this->buildRequestXml(
             $serviceName,
-            $this->buildRequestAttributes($attributes)
+            $this->buildRequestAttributes($attributes),
+            $requestName
         );
+
+        Storage::disk('local')->put(time().$serviceName.'Request.xml',$request);
 
         try {
 
@@ -324,9 +327,10 @@ class Client
      * @param  array  $attributes
      * @return \SimpleXMLElement
      */
-    protected function buildRequestXml($serviceName, array $attributes = [])
+    protected function buildRequestXml($serviceName, array $attributes = [], $requestName)
     {
-        $request = new \SimpleXMLElement($this->buildInitialEnvelopeString($serviceName));
+
+        $request = new \SimpleXMLElement($this->buildInitialEnvelopeString($requestName ? $requestName: $serviceName));
 
         $this->arrayToXml($attributes, $request);
 
@@ -385,6 +389,7 @@ EOT;
      */
     protected function parseResponseXml($response)
     {
+        Storage::disk('local')->put(time().'Response.xml',$response);
         return new \SimpleXMLElement($response);
     }
 
