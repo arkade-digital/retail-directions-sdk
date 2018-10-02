@@ -147,8 +147,6 @@ class Client
         return $this;
     }
 
-
-
     /**
      * Return customers module.
      *
