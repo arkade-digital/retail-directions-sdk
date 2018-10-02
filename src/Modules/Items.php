@@ -9,6 +9,7 @@ use Arkade\RetailDirections\ItemColour;
 use Arkade\RetailDirections\ItemDetail;
 use Arkade\RetailDirections\ItemColourDetail;
 use Arkade\RetailDirections\WebItemDetail;
+use Arkade\RetailDirections\StockAvailability;
 use Arkade\RetailDirections\Exceptions;
 
 class Items extends AbstractModule
@@ -83,6 +84,45 @@ class Items extends AbstractModule
         $items = collect([]);
         foreach ($response->ItemColourList->ItemColour as $item) {
             $items->push(ItemColour::fromXml($item));
+        }
+
+        return $items;
+    }
+
+    /**
+     * Get web site feature items
+     *
+     * @param  string $itemReference
+     * @param  string $sizeCode
+     * @return StockAvailability|Collection
+     * @throws Exceptions\NotFoundException
+     * @throws Exceptions\ServiceException
+     */
+    public function getStoreStockAvailability($itemReference, $sizeCode)
+    {
+        try {
+            $response = $this->client->call('GetStockInStoreAvailability',[
+                'ItemColourSizeList' => [
+                    'SKU' => [
+                        'itemColourRef' => $itemReference,
+                        'sizeCode' => $sizeCode,
+                    ],
+                ],
+                'includeZeroes' => 'Y',
+            ]);
+        } catch (Exceptions\ServiceException $e) {
+
+            if (60103 == $e->getCode()) {
+                throw (new Exceptions\NotFoundException)
+                    ->setHistoryContainer($e->getHistoryContainer());
+            }
+
+            throw $e;
+        }
+
+        $items = collect([]);
+        foreach ($response->ResultList->StockInStoreAvailability as $item) {
+            $items->push(StockAvailability::fromXml($item));
         }
 
         return $items;
