@@ -120,10 +120,10 @@ class Consignment extends Fluent
 			$entity->{$key} = (string) $value;
 		}
 
-		foreach ($consignmentXml->ConsignmentLines as $consignment) {
+		foreach ($xml->ConsignmentLines->ConsignmentLine as $consignment) {
 			$entity->getLineItems()->push([
-				'sku' => data_get($consignment, 'sellcodeCode'),
-				'quantity' => data_get($consignment, 'quantity'),
+				'sku' => (string)data_get($consignment, 'sellcodeCode'),
+				'quantity' => (string)data_get($consignment, 'quantity'),
 			]);
 		}
 
