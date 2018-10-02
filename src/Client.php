@@ -447,7 +447,7 @@ EOT;
 
         $this->historyContainer->record($history);
 
-        if($history->get('request')){
+        if($history->get('request') && $this->recorder){
             $transaction = new Transaction();
             $transaction->setRequest($this->buildLastRequest());
             $transaction->setResponse($this->buildLastResponse());
