@@ -144,6 +144,8 @@ class Customers extends AbstractModule {
 		);
 	}
 
+
+
 	/**
 	 * Return collection of customers for a provided identification.
 	 *
@@ -154,18 +156,18 @@ class Customers extends AbstractModule {
 	 * @throws Exceptions\NotFoundException
 	 * @throws Exceptions\ServiceException
 	 */
-	public function createCustomerSite(Customer $customer) {
+	public function createCustomerSite($customerId, $address = [], $refId = 'WEB', $default = false) {
 		$response = $this->client->call('CustomerSiteEdit', [
 			'CustomerSite' => [
-				'locationRef' => 'WEB',
-				'customerId'  => $customer->getId(),
+				'locationRef' => $refId,
+				'customerId'  => $customerId,
 				'activeInd'   => 'Y',
-				'defaultInd'  => 'Y',
-				'Address1'    => $customer->get('address1'),
-				'suburb'      => $customer->get('suburb'),
-				'state'       => $customer->get('state'),
-				'countryCode' => $customer->get('countryCode') ?: 'AU',
-				'postCode'    => $customer->get('postCode'),
+				'defaultInd'  => $default ? 'Y' : 'N',
+				'Address1'    => array_get($address, 'address1'),
+				'suburb'      => array_get($address, 'suburb'),
+				'state'       => array_get($address, 'state'),
+				'countryCode' => array_get($address, 'countryCode') ?: 'AUS',
+				'postCode'    => array_get($address, 'postCode'),
 			]
 		]);
 
