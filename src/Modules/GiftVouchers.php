@@ -10,14 +10,14 @@ use Arkade\RetailDirections\Exceptions;
 class GiftVouchers extends AbstractModule
 {
 
-    public function getGiftVouchers($referenceNumber, $pin, $locationCode)
+    public function getGiftVouchers($referenceNumber, $pin, $locationCode, $schema)
     {
 
         try {
             $response = $this->client->call('GetVoucherEnquire', [
                 'VoucherDetails' => [
                     'giftvoucher_reference' => $referenceNumber,
-                    'giftvoucherscheme_code' => '04',
+                    'giftvoucherscheme_code' => $schema,
                     'location_code' => $locationCode,
                     'pin' => $pin
                 ],
@@ -37,9 +37,8 @@ class GiftVouchers extends AbstractModule
             throw $e;
         }
 
-        $giftVoucher = $reponse->VoucherDetails;
+        return GiftVoucher::fromXml($response->VoucherDetails);
 
-        return $giftVoucher;
     }
 
 
