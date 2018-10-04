@@ -41,6 +41,35 @@ class GiftVouchers extends AbstractModule
 
     }
 
+    public function createGiftVoucher(GiftVoucher $gift_voucher)
+    {
+    	$payload = array_filter([
+    		'giftvoucherscheme_code' => $gift_voucher->getGiftVoucherSchemaCode(),
+    		'giftvoucherscheme_code' => $gift_voucher->getStoreCode(),
+	    ]);
+
+        try {
+            $response = $this->client->call('VoucherRequest', [
+                'VoucherRequest' => $payload
+              ],
+                'VoucherRequest'
+            );
+
+            //$response = $this->client->call('VoucherEnquiry',$request);
+        } catch (Exceptions\ServiceException $e) {
+
+            if (60103 == $e->getCode()) {
+                throw (new Exceptions\NotFoundException)
+                    ->setHistoryContainer($e->getHistoryContainer());
+            }
+
+            throw $e;
+        }
+
+        return GiftVoucher::fromXml($response->VoucherDetails);
+
+    }
+
 
 
 }
