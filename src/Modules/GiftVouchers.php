@@ -76,12 +76,12 @@ class GiftVouchers extends AbstractModule
                     'store_code' => '1112',
                     'issued_currency_code' => 'AUD',
                     'amount' => 50,
-                    'reference_code' => 'abcdefghijklinn',
+                    'reference_code' => 'abcdefghijklinn',//this is payment reference number
                     'purchaser_first_name' => 'tejas',
                     'recipient_first_name' => 'tejas',
                     'recipient_email_address' => 'tejas@arkade.com.au',
                     'message' => 'hellow how are you',
-                    'fulfilment_method_ind' => 'V',
+                    'fulfilment_method_ind' => 'V',//V for virtual P for physical
                     'status_ind' => 'A'
                 ],
             ],
