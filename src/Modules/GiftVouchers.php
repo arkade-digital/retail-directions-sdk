@@ -65,5 +65,43 @@ class GiftVouchers extends AbstractModule
     }
 
 
+    public function issueGiftVoucher($payload)
+    {
+        try {
+            /*
+             * Working example
+             * $response = $this->client->call('DoGiftVoucherRequest', [
+                'VoucherRequest' => [
+                    'giftvoucherscheme_code' => '000487h1h',
+                    'store_code' => '1112',
+                    'issued_currency_code' => 'AUD',
+                    'amount' => 50,
+                    'reference_code' => 'abcdefghijklinn',
+                    'purchaser_first_name' => 'tejas',
+                    'recipient_first_name' => 'tejas',
+                    'recipient_email_address' => 'tejas@arkade.com.au',
+                    'message' => 'hellow how are you',
+                    'fulfilment_method_ind' => 'V',
+                    'status_ind' => 'A'
+                ],
+            ],
+                'VoucherRequest'
+            );*/
+            $response = $this->client->call('DoGiftVoucherRequest', [
+                'VoucherRequest' => $payload,
+            ],
+                'VoucherRequest'
+            );
+        } catch (Exceptions\ServiceException $e) {
+
+            if (60103 == $e->getCode()) {
+                throw (new Exceptions\NotFoundException)
+                    ->setHistoryContainer($e->getHistoryContainer());
+            }
+            throw $e;
+        }
+
+        return $response->VoucherRequest;
+    }
 
 }
