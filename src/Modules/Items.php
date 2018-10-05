@@ -92,20 +92,18 @@ class Items extends AbstractModule
     /**
      * Get web site feature items
      *
-     * @param  string $itemReference
-     * @param  string $sizeCode
+     * @param  string $sellcodeCode
      * @return StockAvailability|Collection
      * @throws Exceptions\NotFoundException
      * @throws Exceptions\ServiceException
      */
-    public function getStoreStockAvailability($itemReference, $sizeCode)
+    public function getStoreStockAvailability($sellcodeCode)
     {
         try {
             $response = $this->client->call('GetStockInStoreAvailability',[
                 'ItemColourSizeList' => [
                     'SKU' => [
-                        'itemColourRef' => $itemReference,
-                        'sizeCode' => $sizeCode,
+                        'sellcodeCode' => $sellcodeCode,
                     ],
                 ],
                 'includeZeroes' => 'Y',
@@ -134,7 +132,6 @@ class Items extends AbstractModule
      * @param  string $itemReference
      * @param  string $storeCode
      * @param  string $supplyChannelCode
-     * @param  Carbon|null $datetime
      * @return Item|Collection
      * @throws Exceptions\NotFoundException
      * @throws Exceptions\ServiceException
@@ -173,7 +170,7 @@ class Items extends AbstractModule
      * @param  string $itemReference
      * @param  string $storeCode
      * @param  string $storeGroupCode
-     * @param  string $itemCode
+     * @param  string $itemTypeCode
      * @return ItemColourDetail|Collection
      * @throws Exceptions\NotFoundException
      * @throws Exceptions\ServiceException
