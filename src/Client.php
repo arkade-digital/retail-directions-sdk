@@ -178,7 +178,7 @@ class Client
     }
 
     /**
-     * @return Modules\GiftVoucher
+     * @return Modules\GiftVouchers
      */
     public function giftVouchers()
     {

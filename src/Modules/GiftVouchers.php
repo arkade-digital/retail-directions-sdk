@@ -65,6 +65,12 @@ class GiftVouchers extends AbstractModule
     }
 
 
+	/**
+	 * @param  array $payload
+	 *
+	 * @return  \SimpleXMLElement
+	 * @throws Exceptions\ServiceException
+	 */
     public function issueGiftVoucher($payload)
     {
         try {
