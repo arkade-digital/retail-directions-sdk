@@ -97,8 +97,9 @@ class Items extends AbstractModule
      * @throws Exceptions\NotFoundException
      * @throws Exceptions\ServiceException
      */
-    public function getStoreStockAvailability($sellcodeCode)
+    public function getStoreStockAvailability($sellcodeCode, $includeZeros = true)
     {
+        $includeZeros = $includeZeros ? 'Y' : 'N';
         try {
             $response = $this->client->call('GetStockInStoreAvailability',[
                 'ItemColourSizeList' => [
@@ -106,7 +107,7 @@ class Items extends AbstractModule
                         'sellcodeCode' => $sellcodeCode,
                     ],
                 ],
-                'includeZeroes' => 'Y',
+                'includeZeroes' => $includeZeros,
             ]);
         } catch (Exceptions\ServiceException $e) {
 
