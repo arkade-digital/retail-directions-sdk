@@ -159,6 +159,22 @@ class ItemColourDetail extends Fluent
             }
         }
 
+        if($xml->attributes) {
+
+            foreach($xml->attributes->attribute as $itemAttribute) {
+               $attributeName = ucwords(str_replace(
+                       " ",
+                       "" ,
+                       $itemAttribute->attributeName
+               ));
+
+               if($attributeName) {
+                   $itemColourDetail->{$attributeName} = (string) $itemAttribute->attributeValue;
+               }
+
+            }
+        }
+
         return $itemColourDetail;
     }
 }
