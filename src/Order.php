@@ -55,6 +55,17 @@ class Order extends Fluent {
 		return $this;
 	}
 
+    /**
+     * @param Collection|LineItem[] $lineItems
+     *
+     * @return Collection|LineItem[]
+     */
+    public function setLineItems($lineItems) {
+        $this->lineItems = $lineItems;
+
+        return $this->lineItems;
+    }
+
 	/**
 	 * @return Collection|LineItem[]
 	 */

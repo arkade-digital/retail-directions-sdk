@@ -126,7 +126,7 @@ class GiftVouchers extends AbstractModule
     public function finaliseGiftVoucher($payload, $payments)
     {
         /*
-        * Working example
+        * Multi Step Sample
         * $payload = [
                'giftvoucherrequest_code' => '000487h1h',
                'store_code' => '1112',
