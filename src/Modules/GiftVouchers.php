@@ -5,6 +5,8 @@ namespace Arkade\RetailDirections\Modules;
 use DomainException;
 use Illuminate\Support\Collection;
 use Arkade\RetailDirections\GiftVoucher;
+use Arkade\RetailDirections\GiftVoucherRequest;
+use Arkade\RetailDirections\GiftVoucherFinaliseRequest;
 use Arkade\RetailDirections\Exceptions;
 use Arkade\RetailDirections\PaymentDetail;
 
@@ -90,7 +92,8 @@ class GiftVouchers extends AbstractModule
             throw $e;
         }
 
-        return $response->VoucherRequest;
+        return GiftVoucherRequest::fromXml($response->VoucherRequest);
+
     }
 
     /**
@@ -112,7 +115,7 @@ class GiftVouchers extends AbstractModule
                'status_ind' => 'A'
                'finalise_user' => 'WEB',
                'finalise_date_time' => '2013-09-02T09:58:57.6167226+10:00',
-               'generate_giftcard_ind' => 'N'
+               'generate_giftcard_ind' => 'Y'
                'fulfilment_method_ind' => 'V',//V for virtual P for physical
            ];
         */
@@ -138,9 +141,7 @@ class GiftVouchers extends AbstractModule
             throw $e;
         }
 
-        dump($response);
-
-        return $response->VoucherRequest;
+        return GiftVoucherFinaliseRequest::fromXml($response->VoucherRequestFinalise);
     }
 
 }
