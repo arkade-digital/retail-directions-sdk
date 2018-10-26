@@ -13,6 +13,19 @@ use Arkade\RetailDirections\PaymentDetail;
 class GiftVouchers extends AbstractModule
 {
 
+    /**
+     * Get a gift voucher by reference number.
+     *
+     * @param string $referenceNumber
+     * @param string $pin
+     * @param string $locationCode
+     * @param string $schema
+     *
+     * @return GiftVoucher
+     *
+     * @throws Exceptions\ServiceException
+     * @throws Exceptions\NotFoundException
+     */
     public function getGiftVouchers($referenceNumber, $pin, $locationCode, $schema)
     {
         try {
@@ -38,12 +51,15 @@ class GiftVouchers extends AbstractModule
         return GiftVoucher::fromXml($response->VoucherDetails);
     }
 
-
 	/**
+     * Issues a gift voucher, can use either the one or two step process
+     *
 	 * @param  array $payload
-	 *
-	 * @return  \SimpleXMLElement
+     *
+	 * @return GiftVoucherRequest
+     *
 	 * @throws Exceptions\ServiceException
+     * @throws Exceptions\NotFoundException
 	 */
     public function issueGiftVoucher($payload)
     {
@@ -97,13 +113,15 @@ class GiftVouchers extends AbstractModule
     }
 
     /**
-     * Finalise pending giftcard.
+     * Finalise pending giftcard request to include payment details.
      *
-     * @param  array $payload
+     * @param array $payload
      * @param PaymentDetail[]|Collection $payments
      *
-     * @return  \SimpleXMLElement
+     * @return GiftVoucherFinaliseRequest
+     *
      * @throws Exceptions\ServiceException
+     * @throws Exceptions\NotFoundException
      */
     public function finaliseGiftVoucher($payload, $payments)
     {
