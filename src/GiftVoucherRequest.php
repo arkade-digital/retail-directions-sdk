@@ -8,6 +8,8 @@ use Illuminate\Support\Collection;
 
 class GiftVoucherRequest extends Fluent
 {
+    protected $giftVoucherRequestCode;
+
     protected $giftVoucherReference;
 
     protected $giftVoucherSchemaCode;
@@ -25,6 +27,24 @@ class GiftVoucherRequest extends Fluent
     {
         parent::__construct($attributes);
 
+    }
+
+    /**
+     * @return mixed
+     */
+    public function getGiftVoucherRequestCode()
+    {
+        return $this->giftVoucherRequestCode;
+    }
+
+    /**
+     * @param mixed $giftVoucherRequestCode
+     * @return GiftVoucherRequest
+     */
+    public function setGiftVoucherRequestCode($giftVoucherRequestCode)
+    {
+        $this->giftVoucherRequestCode = $giftVoucherRequestCode;
+        return $this;
     }
 
     /**
@@ -104,6 +124,7 @@ class GiftVoucherRequest extends Fluent
     ) {
         $giftVoucherRequest = new static;
 
+        $giftVoucherRequest->setGiftVoucherRequestCode((string) $xml->giftvoucherrequest_code);
         $giftVoucherRequest->setGiftVoucherReference((string) $xml->giftvoucher_reference);
         $giftVoucherRequest->setGiftVoucherSchemaCode((string) $xml->giftvoucherscheme_code);
         $giftVoucherRequest->setStatusInd((string) $xml->status_ind);

@@ -123,7 +123,6 @@ class GiftVouchers extends AbstractModule
             'VoucherRequestFinalise' => $payload
         ];
 
-        // Add payments to order is available, this is the last chance below the order is locked
         if ($payments->count()) {
             $payload['PaymentDetails'] = $payments->map(function(PaymentDetail $payment) {
                 return $payment->getXmlArray();
