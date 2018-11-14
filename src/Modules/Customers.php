@@ -168,6 +168,8 @@ class Customers extends AbstractModule {
 				'state'       => array_get($address, 'state'),
 				'countryCode' => array_get($address, 'countryCode') ?: 'AUS',
 				'postCode'    => array_get($address, 'postCode'),
+                'firstName'   => array_get($address, 'firstName'),
+                'surname'     => array_get($address, 'surname'),
 			]
 		]);
 
