@@ -7,6 +7,7 @@ use Illuminate\Support\Collection;
 use Arkade\RetailDirections\GiftVoucher;
 use Arkade\RetailDirections\GiftVoucherRequest;
 use Arkade\RetailDirections\GiftVoucherFinaliseRequest;
+use Arkade\RetailDirections\GiftVoucherRedeemRequest;
 use Arkade\RetailDirections\Exceptions;
 use Arkade\RetailDirections\PaymentDetail;
 
@@ -159,6 +160,42 @@ class GiftVouchers extends AbstractModule
         }
 
         return GiftVoucherFinaliseRequest::fromXml($response->VoucherRequestFinalise);
+    }
+
+    public function redeemGiftVoucher($payload)
+    {
+        $payload = [
+            'reference_type_ind' => 'E',
+            'doc_line_id' => '12345',
+            'clienttype_ind' => 'E',
+            'giftvoucherscheme_code' => '000487h1h',
+            'giftvoucher_reference' => '2780055041482665455',
+            'location_code' => '1112',
+            'tran_type' => 'R',
+            'tran_datetime' => '2018-11-20T13:50:00.0000000+10:00',
+            'tran_currency' => 'AUD',
+            'tran_amount' => 100000000000.00,
+            'user_code' => '111200007079',
+            'pin' => '6654',
+            'min_bal_redeem_full_ind' => 'N'
+        ];
+
+        try {
+            $response = $this->client->call('DoVoucherTransaction', [
+                'VoucherTransaction' => $payload,
+            ],
+                'VoucherTransaction'
+            );
+        } catch (Exceptions\ServiceException $e) {
+
+            if (60103 == $e->getCode()) {
+                throw (new Exceptions\NotFoundException)
+                    ->setHistoryContainer($e->getHistoryContainer());
+            }
+            throw $e;
+        }
+
+        return GiftVoucherRedeemRequest::fromXml($response->VoucherTransaction);
     }
 
 }
