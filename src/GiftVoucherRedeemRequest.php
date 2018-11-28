@@ -40,14 +40,11 @@ class GiftVoucherRedeemRequest extends Fluent
     }
 
 
-
     public static function fromXml(
         \SimpleXMLElement $xml
     ) {
         $giftVoucherRedeemRequest = new static;
-
         $giftVoucherRedeemRequest->setTransactionAmount((string) $xml->tran_amount);
-
 
         foreach ($xml->children() as $key => $value) {
             $giftVoucherRedeemRequest->{$key} = (string) $value;
