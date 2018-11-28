@@ -164,7 +164,7 @@ class GiftVouchers extends AbstractModule
 
     public function redeemGiftVoucher($payload)
     {
-        $payload = [
+        /*$payload = [
             'reference_type_ind' => 'E',
             'doc_line_id' => '12345',
             'clienttype_ind' => 'E',
@@ -178,7 +178,7 @@ class GiftVouchers extends AbstractModule
             'user_code' => '111200007079',
             'pin' => '6654',
             'min_bal_redeem_full_ind' => 'N'
-        ];
+        ];*/
 
         try {
             $response = $this->client->call('DoVoucherTransaction', [
