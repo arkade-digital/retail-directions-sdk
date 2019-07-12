@@ -1,0 +1,1 @@
+<ItemDetailsGetRequest xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:xsd="http://www.w3.org/2001/XMLSchema" xmlns="http://www.retaildirections.com/"><ItemDetailsGet><itemReference>01341355</itemReference><storeCode>1112</storeCode><supplyChannelCode>1001</supplyChannelCode><homeLocationCode/><locationCode/></ItemDetailsGet></ItemDetailsGetRequest>

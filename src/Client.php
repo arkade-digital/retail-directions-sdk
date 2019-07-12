@@ -3,6 +3,7 @@
 namespace Arkade\RetailDirections;
 
 use Exception;
+use Illuminate\Support\Facades\Storage;
 use Zend\Soap;
 use Carbon\Carbon;
 use Zend\Diactoros;
@@ -10,6 +11,11 @@ use UnexpectedValueException;
 use Illuminate\Support\Fluent;
 use Psr\Http\Message\RequestInterface;
 use Psr\Http\Message\ResponseInterface;
+use Arkade\HttpRecorder\Recorder;
+use Arkade\HttpRecorder\Transaction;
+use Arkade\HttpRecorder\Drivers\EloquentDriver;
+use Arkade\HttpRecorder\Integrations\Laravel\TransactionFactory;
+use Arkade\HttpRecorder\Integrations\Laravel\TransactionModel;
 
 class Client
 {
@@ -40,6 +46,13 @@ class Client
      * @var HistoryContainer|null
      */
     protected $historyContainer;
+
+    /**
+     * Http recorder.
+     *
+     * @var HttpRecorder|null
+     */
+    protected $recorder;
 
     /**
      * Location.
@@ -117,6 +130,34 @@ class Client
     }
 
     /**
+     * @return HttpRecorder|null
+     */
+    public function getRecorder()
+    {
+        return $this->recorder;
+    }
+
+    /**
+     * @param HttpRecorder|null $recorder
+     * @return Client
+     */
+    public function setRecorder($recorder)
+    {
+        $this->recorder = $recorder;
+        return $this;
+    }
+
+    /**
+     * Return customers module.
+     *
+     * @return Modules\Orders
+     */
+    public function orders()
+    {
+        return new Modules\Orders($this);
+    }
+
+    /**
      * Return customers module.
      *
      * @return Modules\Customers
@@ -127,6 +168,24 @@ class Client
     }
 
     /**
+     * Return items module.
+     *
+     * @return Modules\Items
+     */
+    public function items()
+    {
+        return new Modules\Items($this);
+    }
+
+    /**
+     * @return Modules\GiftVouchers
+     */
+    public function giftVouchers()
+    {
+        return new Modules\GiftVouchers($this);
+    }
+
+    /**
      * Return loyalty customers module.
      *
      * @return Modules\LoyaltyCustomers
@@ -134,6 +193,16 @@ class Client
     public function loyaltyCustomers()
     {
         return new Modules\LoyaltyCustomers($this);
+    }
+
+    /**
+     * Return stores module.
+     *
+     * @return Modules\Stores
+     */
+    public function stores()
+    {
+        return new Modules\Stores($this);
     }
 
     /**
@@ -189,10 +258,11 @@ class Client
      *
      * @param  string $serviceName
      * @param  array  $attributes
+     * @param  string $requestName
      * @return mixed
      * @throws Exceptions\ServiceException
      */
-    public function call($serviceName, $attributes = [])
+    public function call($serviceName, $attributes = [], $requestName=false)
     {
         $this->client->addSoapInputHeader(
             $this->buildSecurityTokenHeader($serviceName)
@@ -200,10 +270,14 @@ class Client
 
         $request = $this->buildRequestXml(
             $serviceName,
-            $this->buildRequestAttributes($attributes)
+            $this->buildRequestAttributes($attributes),
+            $requestName
         );
 
+        //Storage::disk('local')->put(time().$serviceName.'Request.xml',$request);
+
         try {
+
             $response = $this->client->call('RDService', [
                 'RDService' => [
                     'request' => $request
@@ -279,9 +353,10 @@ class Client
      * @param  array  $attributes
      * @return \SimpleXMLElement
      */
-    protected function buildRequestXml($serviceName, array $attributes = [])
+    protected function buildRequestXml($serviceName, array $attributes = [], $requestName)
     {
-        $request = new \SimpleXMLElement($this->buildInitialEnvelopeString($serviceName));
+
+        $request = new \SimpleXMLElement($this->buildInitialEnvelopeString($requestName ? $requestName: $serviceName));
 
         $this->arrayToXml($attributes, $request);
 
@@ -340,6 +415,7 @@ EOT;
      */
     protected function parseResponseXml($response)
     {
+        //Storage::disk('local')->put(time().'Response.xml',$response);
         return new \SimpleXMLElement($response);
     }
 
@@ -355,7 +431,7 @@ EOT;
     {
         if (! $this->historyContainer) return;
 
-        $this->historyContainer->record(new Fluent([
+        $history = new Fluent([
             'request'         => $this->buildLastRequest(),
             'requestHeaders'  => html_entity_decode($this->client->getLastRequestHeaders()),
             'requestBody'     => html_entity_decode($this->client->getLastRequest()),
@@ -365,7 +441,22 @@ EOT;
             'responseBody'    => html_entity_decode($this->client->getLastResponse()),
             'serviceResult'   => $serviceResult ? substr($serviceResult, 3) : null, // Trim weird characters from beginning
             'exception'       => $exception
-        ]));
+        ]);
+
+        $this->historyContainer->record($history);
+
+        if($history->get('request') && $this->recorder){
+            $transaction = new Transaction();
+            $transaction->setRequest($this->buildLastRequest());
+            $transaction->setResponse($this->buildLastResponse());
+            $transaction->pushTags('retail-directions','outgoing');
+
+            if($exception){
+                $transaction->setException($exception);
+            }
+
+            $this->recorder->record($transaction);
+        }
     }
 
     /**
