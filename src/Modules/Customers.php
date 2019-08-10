@@ -9,6 +9,7 @@ use Arkade\RetailDirections\Address;
 use Arkade\RetailDirections\Customer;
 use Arkade\RetailDirections\Exceptions;
 use Arkade\RetailDirections\Identification;
+use Illuminate\Support\Facades\Log;
 
 class Customers extends AbstractModule
 {
@@ -79,9 +80,17 @@ class Customers extends AbstractModule
 
         $collection = new Collection;
 
-        foreach ($response->Customers->Customer as $customer) {
-            $collection->push(Customer::fromXml($customer));
+        foreach($response->Customers as $customers) {
+            foreach ($customers->Customer as $customer) {
+                $collection->push(
+                    Customer::fromXml(
+                        $customer, null, null,
+                        $customers->LoyaltyCustomers
+                    )
+                );
+            }
         }
+
 
         if ($collection->isEmpty()) {
             throw (new Exceptions\NotFoundException)

@@ -4,6 +4,7 @@ namespace Arkade\RetailDirections;
 
 use Illuminate\Support\Fluent;
 use Illuminate\Support\Collection;
+use Illuminate\Support\Facades\Log;
 
 class Customer extends Fluent
 {
@@ -20,6 +21,13 @@ class Customer extends Fluent
      * @var Collection[Identification]
      */
     protected $identifications;
+
+    /**
+     * Collection of loyalty attached to customer.
+     *
+     * @var Collection[CustomerLoyalty]
+     */
+    protected $customerLoyalty;
 
     /**
      * Collection of addresses attached to customer.
@@ -39,6 +47,7 @@ class Customer extends Fluent
 
         $this->identifications = new Collection;
         $this->addresses = new Collection;
+        $this->customerLoyalty = new Collection;
     }
 
     /**
@@ -88,6 +97,29 @@ class Customer extends Fluent
     }
 
     /**
+     * Return collection of loyalty attached to customer.
+     *
+     * @return Collection
+     */
+    public function getCustomerLoyalty()
+    {
+        return $this->customerLoyalty;
+    }
+
+    /**
+     * Push provided loyalty on to collection.
+     *
+     * @param  CustomerLoyalty $customerLoyalty
+     * @return Customer
+     */
+    public function pushCustomerLoyalty(CustomerLoyalty $customerLoyalty)
+    {
+        $this->customerLoyalty->push($customerLoyalty);
+
+        return $this;
+    }
+
+    /**
      * Return collection of addresses attached to customer.
      *
      * @return Collection
@@ -118,7 +150,8 @@ class Customer extends Fluent
     public static function fromXml(
         \SimpleXMLElement $xml,
         \SimpleXMLElement $identificationsXml = null,
-        \SimpleXMLElement $addressesXml = null
+        \SimpleXMLElement $addressesXml = null,
+        \SimpleXMLElement $loyaltyXML = null
     ) {
         $customer = new static;
 
@@ -137,6 +170,15 @@ class Customer extends Fluent
         if ($addressesXml) {
             foreach ($addressesXml->Address as $address) {
                 $customer->getAddresses()->push(Address::fromXml($address));
+            }
+        }
+
+
+        if($loyaltyXML) {
+            foreach($loyaltyXML as $loyaltyCustomers) {
+                foreach($loyaltyCustomers as $loyaltyCustomer) {
+                    $customer->pushCustomerLoyalty(CustomerLoyalty::fromXml($loyaltyCustomer));
+                }
             }
         }
 

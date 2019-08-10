@@ -41,7 +41,8 @@ class LoyaltyCustomer extends Customer
     public static function fromXml(
         \SimpleXMLElement $xml,
         \SimpleXMLElement $identificationsXml = null,
-        \SimpleXMLElement $addressesXml = null
+        \SimpleXMLElement $addressesXml = null,
+        \SimpleXMLElement $loyaltyXML = null
     ) {
         $customer = new static;
 
