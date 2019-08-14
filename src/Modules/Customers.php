@@ -84,8 +84,9 @@ class Customers extends AbstractModule
             foreach ($customers->Customer as $customer) {
                 $collection->push(
                     Customer::fromXml(
-                        $customer, null, null,
-                        $customers->LoyaltyCustomers
+                        $customer, null, $response->Addresses,
+                        $customers->LoyaltyCustomers,
+
                     )
                 );
             }
