@@ -45,11 +45,14 @@ class Customers extends AbstractModule
         return Customer::fromXml(
             $response->Customer,
             $response->CustomerIdentifications,
-            $response->Addresses
+            $response->Addresses,
+            $response->LoyaltyCustomers
         );
     }
 
     /**
+     * WARNING: Only use to get the customer Id. It does not contain all data
+     *
      * Return a collection of customers for an email address.
      *
      * @param  string      $email
@@ -84,8 +87,7 @@ class Customers extends AbstractModule
             foreach ($customers->Customer as $customer) {
                 $collection->push(
                     Customer::fromXml(
-                        $customer, null, $response->Addresses,
-                        $customers->LoyaltyCustomers
+                        $customer
                     )
                 );
             }
